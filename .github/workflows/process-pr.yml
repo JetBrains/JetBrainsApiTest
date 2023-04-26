@@ -24,6 +24,7 @@ jobs:
           bash tools/build.sh process
           echo "BUILD_EXIT_CODE=$?" >> $GITHUB_ENV
           cat "out/message.txt" 1> artifact/message.txt
+          [ -s artifact/message.txt ] || echo -e "\u2757 Seems like there are no changes in jetbrains.api." > artifact/message.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v3.1.2
         with:
