@@ -22,17 +22,16 @@ jobs:
           echo ${{github.event.number}} > artifact/pr.txt
           set +e
           bash tools/build.sh process
-          echo "EXIT_CODE=$?" >> $GITHUB_ENV
+          EXIT_CODE=$?
           cat "out/message.txt" 1> artifact/message.txt
           [ -s artifact/message.txt ] || {
             echo -e "\u2757 Seems like there are no changes in jetbrains.api." > artifact/message.txt
-            echo "EXIT_CODE=1" >> $GITHUB_ENV
+            EXIT_CODE=1
           }
+          exit $EXIT_CODE
       - name: Upload artifact
+        if: always()
         uses: actions/upload-artifact@v3.1.2
         with:
           name: process
           path: artifact/
-      - name: Check exit code
-        run: |
-          test $EXIT_CODE -eq 0 || exit 1
