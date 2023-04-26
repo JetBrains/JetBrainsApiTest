@@ -3,7 +3,6 @@ on:
   workflow_run:
     workflows: ["Pull Request"]
     types: [completed]
-    branches: [main]
 permissions:
   contents: read
   pull-requests: write
