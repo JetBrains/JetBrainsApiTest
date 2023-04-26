@@ -42,6 +42,16 @@ public final class JBR {
         bootstrapException = exception;
     }
 
+    private static final String API_VERSION = getApiVersionFromModule();
+    private static String getApiVersionFromModule() {
+        java.lang.module.ModuleDescriptor descriptor = JBR.class.getModule().getDescriptor();
+        if (descriptor != null && descriptor.version().isPresent()) {
+            return descriptor.version().get().toString();
+        } else {
+            return "SNAPSHOT";
+        }
+    }
+
     private JBR() {}
 
     private static <T> T getService(Class<T> interFace, FallbackSupplier<T> fallback) {
@@ -73,7 +83,7 @@ public final class JBR {
      * @return JBR API version in form {@code JBR.MAJOR.MINOR.PATCH}
      */
     public static String getApiVersion() {
-        return "/*API_VERSION*/";
+        return API_VERSION;
     }
 
     /**

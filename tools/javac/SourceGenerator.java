@@ -19,12 +19,10 @@ import java.util.stream.Stream;
 public class SourceGenerator {
 
     private final ProcessingEnvironment processingEnv;
-    private final String apiVersion;
     private final String jbrTemplate, serviceGetterTemplate;
 
-    public SourceGenerator(ProcessingEnvironment processingEnv, String apiVersion) {
+    public SourceGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
-        this.apiVersion = apiVersion;
         try {
             jbrTemplate = Files.readString(Path.of("tools/templates/JBR.java"));
             serviceGetterTemplate = Files.readString(Path.of("tools/templates/service-getter.txt"));
@@ -46,8 +44,7 @@ public class SourceGenerator {
                 .map(this::generateServiceGetter).toList();
         String result = replaceTemplate(jbrTemplate, "/*GENERATED_METHODS*/", serviceGetters)
                 .replace("/*KNOWN_PROXIES*/", joinClassNamesToList(proxyElements))
-                .replace("/*KNOWN_SERVICES*/", joinClassNamesToList(serviceElements))
-                .replace("/*API_VERSION*/", apiVersion);
+                .replace("/*KNOWN_SERVICES*/", joinClassNamesToList(serviceElements));
 
         // Write generated content.
         try {

@@ -1,6 +1,9 @@
-import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.api.*;
+import com.sun.tools.javac.tree.*;
+import com.sun.tools.javac.util.*;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -8,11 +11,12 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
- * Magically makes @Deprecated annotations with #forRemoval
- * and #since available from Java 9 compile for Java 8.
+ * Magically makes JBR API written in Java 9 compile for Java 8.
  * Also removes Java 9 classes which are duplicating existing Java 8 classes.
  */
 public class CompatibilityPlugin implements Plugin {
+
+    private TreeMaker treeMaker;
 
     @Override
     public String getName() {
@@ -21,6 +25,8 @@ public class CompatibilityPlugin implements Plugin {
 
     @Override
     public void init(JavacTask task, String... args) {
+        Context context = ((BasicJavacTask) task).getContext();
+        treeMaker = TreeMaker.instance(context);
         task.addTaskListener(new TaskListener() {
             public void finished(TaskEvent e) {
                 if (e.getKind() == TaskEvent.Kind.PARSE) {
@@ -32,9 +38,9 @@ public class CompatibilityPlugin implements Plugin {
         });
     }
 
-    private static final TreeScanner<Void, Void> scanner = new TreeScanner<>() {
+    private final TreeScanner<Void, String> scanner = new TreeScanner<>() {
         @Override
-        public Void visitAnnotation(AnnotationTree node, Void unused) {
+        public Void visitAnnotation(AnnotationTree node, String qualifiedName) {
             switch (node.getAnnotationType().toString()) {
                 case "Deprecated":
                 case "java.lang.Deprecated":
@@ -42,7 +48,29 @@ public class CompatibilityPlugin implements Plugin {
                     var jca = (JCTree.JCAnnotation) node;
                     jca.args = com.sun.tools.javac.util.List.nil();
             }
-            return super.visitAnnotation(node, unused);
+            return super.visitAnnotation(node, qualifiedName);
+        }
+
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree node, String qualifiedName) {
+            ExpressionTree pkg = node.getPackageName();
+            return super.visitCompilationUnit(node, pkg == null ? null : pkg.toString());
+        }
+        @Override
+        public Void visitClass(ClassTree node, String qualifiedName) {
+            return super.visitClass(node, qualifiedName == null ? node.getSimpleName().toString() :
+                    qualifiedName + "." + node.getSimpleName().toString());
+        }
+        @Override
+        public Void visitMethod(MethodTree node, String qualifiedName) {
+            // getApiVersionFromModule works, well, by asking version from module,
+            // which is not available in Java 8, so for that case we return UNKNOWN.
+            if (qualifiedName.equals("com.jetbrains.JBR") &&
+                    node.getName().toString().equals("getApiVersionFromModule")) {
+                var body = (JCTree.JCBlock) node.getBody();
+                body.stats = com.sun.tools.javac.util.List.of(treeMaker.Return(treeMaker.Literal("UNKNOWN")));
+            }
+            return super.visitMethod(node, qualifiedName);
         }
     };
 

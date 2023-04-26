@@ -66,12 +66,14 @@ JAVAC="$JAVAC $SMALLJAVA_FLAGS -g -Werror -Xlint:all -implicit:none -Xprefer:sou
 
 # Compile tools.
 $JAVAC -d $TOOLS_OUT \
+  --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
   --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
   --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
   tools/javac/*.java || exit 1
 
 # Configure options for using tools.
 JAVAC="$JAVAC
+  -J--add-exports -Jjdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
   -J--add-exports -Jjdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
   -J--add-exports -Jjdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
   -sourcepath src -processorpath $TOOLS_OUT"

@@ -1,5 +1,3 @@
-import com.sun.source.util.JavacTask;
-
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
@@ -15,8 +13,7 @@ import java.util.Set;
 public class ApiProcessor extends AbstractProcessor {
 
     private Path output;
-    private Api.Version referenceVersion;
-    private Api.Module oldApi;
+    private Api.Version versionOverride;
     private SourceGenerator sourceGenerator;
     private ApiCollector apiCollector;
 
@@ -26,17 +23,9 @@ public class ApiProcessor extends AbstractProcessor {
 
         output = Path.of(Objects.requireNonNull(processingEnv.getOptions().get("output"), "-Aoutput option is missing"));
         String version = processingEnv.getOptions().get("version");
-        if (version != null) referenceVersion = Api.Version.parse(version);
-        else {
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("api-blob"))) {
-                oldApi = (Api.Module) in.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            referenceVersion = oldApi.version;
-        }
+        if (version != null) versionOverride = Api.Version.parse(version);
 
-        sourceGenerator = new SourceGenerator(processingEnv, referenceVersion.toString());
+        sourceGenerator = new SourceGenerator(processingEnv);
         apiCollector = new ApiCollector(processingEnv);
     }
 
@@ -63,13 +52,20 @@ public class ApiProcessor extends AbstractProcessor {
         if (newApi == null) return true;
         try {
             String message, outputVersion;
-            if (oldApi == null) {
-                // Override API version from options
-                newApi.version = referenceVersion;
-                message = "\u2757 Skipping API checks, version override specified: " + referenceVersion + "\n";
-                outputVersion = referenceVersion.toString();
+            if (versionOverride != null) {
+                // Override API version from options.
+                newApi.version = versionOverride;
+                message = "\u2757 Skipping API checks, version override specified: " + versionOverride + "\n";
+                outputVersion = versionOverride.toString();
             } else {
-                // Compare API changes
+                // Read old API info.
+                Api.Module oldApi;
+                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("api-blob"))) {
+                    oldApi = (Api.Module) in.readObject();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                // Compare API changes.
                 ApiComparator.Node result = ApiComparator.compare(oldApi, newApi);
                 StringBuilder out = new StringBuilder();
                 ApiComparator.Compatibility compatibility = result.traverse(out);
@@ -77,7 +73,7 @@ public class ApiProcessor extends AbstractProcessor {
                 if (compatibility == ApiComparator.Compatibility.SAME) {
                     // Do not print anything if there were no changes.
                     message = null;
-                    outputVersion = referenceVersion.toString();
+                    outputVersion = oldApi.version.toString();
                 } else {
                     // Print details.
                     if (compatibility == ApiComparator.Compatibility.MAJOR) {
@@ -99,7 +95,7 @@ public class ApiProcessor extends AbstractProcessor {
                 System.out.println(message.replaceAll("\u2757", "!!!").replaceAll("[^\\x00-\\x7F]", "").stripTrailing());
             }
 
-            // Save metadata
+            // Save metadata.
             Files.createDirectories(output);
             try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(output.resolve("api-blob")))) {
                 out.writeObject(newApi);
