@@ -39,7 +39,7 @@ jobs:
           script: |
             var fs = require('fs');
             var issueNumber = Number(fs.readFileSync('pr.txt'));
-            var message = fs.readFileSync('message.txt');
+            var message = fs.readFileSync('message.txt').toString();
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
