@@ -26,7 +26,7 @@ jobs:
           cat "out/message.txt" 1> artifact/message.txt
           [ -s artifact/message.txt ] || {
             echo -e "\u2757 Seems like there are no changes in jetbrains.api." > artifact/message.txt
-            "EXIT_CODE=1" >> $GITHUB_ENV
+            echo "EXIT_CODE=1" >> $GITHUB_ENV
           }
       - name: Upload artifact
         uses: actions/upload-artifact@v3.1.2
