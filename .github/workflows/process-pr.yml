@@ -15,7 +15,7 @@ jobs:
 #         with:
 #           distribution: oracle
 #           java-version: 20
-        uses: oracle-actions/setup-java@v1.3.1
+        uses: oracle-actions/setup-java@b9d8cf728e941b3ce91823c84cb792e7602e4687
       - name: Process
         run: |
           mkdir -p artifact
