@@ -25,7 +25,7 @@ jobs:
 #            })
 #            process.exit(1);
       - name: Checkout
-        uses: actions/checkout@v3.5.1
+        uses: actions/checkout@v3.5.2
 #        with:
 #          ref: ${{github.head_ref}}
       - name: Process
@@ -33,7 +33,7 @@ jobs:
           mkdir -p output
           echo ${{github.event.number}} > output/pr.txt
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: process
           path: output/
