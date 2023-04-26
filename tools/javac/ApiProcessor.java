@@ -75,6 +75,8 @@ public class ApiProcessor extends AbstractProcessor {
                     message = null;
                     outputVersion = oldApi.version.toString();
                 } else {
+                    // Put changes into code block.
+                    if (out.length() > 0) out.insert(0, "```\n").append("```\n");
                     // Print details.
                     if (compatibility == ApiComparator.Compatibility.MAJOR) {
                         out.append("\u2757 There are major changes which require extra attention, they are marked with \"\u2757\".\n");
@@ -92,7 +94,11 @@ public class ApiProcessor extends AbstractProcessor {
             }
             if (message != null) {
                 // Get rid of unicode symbols when printing to stdout.
-                System.out.println(message.replaceAll("\u2757", "!!!").replaceAll("[^\\x00-\\x7F]", "").stripTrailing());
+                System.out.println(message
+                        .replaceAll("\u2757", "!!!")
+                        .replaceAll("[^\\x00-\\x7F]", "")
+                        .replaceAll("```\n", "")
+                        .stripTrailing());
             }
 
             // Save metadata.
