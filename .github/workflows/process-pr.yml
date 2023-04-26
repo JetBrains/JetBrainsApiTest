@@ -12,11 +12,11 @@ jobs:
 #          ref: ${{github.head_ref}}
       - name: Process
         run: |
-          mkdir -p output
-          echo ${{github.event.number}} > output/pr.txt
-          git status > output/message.txt
+          mkdir -p artifact
+          echo ${{github.event.number}} > artifact/pr.txt
+          git log -5 --stat > artifact/message.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v3.1.2
         with:
           name: process
-          path: output/
+          path: artifact/
