@@ -32,4 +32,3 @@ jobs:
       - name: Check exit code
         run: |
           test $BUILD_EXIT_CODE -eq 0 || exit 1
-

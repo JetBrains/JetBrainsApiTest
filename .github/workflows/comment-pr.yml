@@ -46,4 +46,3 @@ jobs:
               issue_number: issueNumber,
               body: message
             });
-
