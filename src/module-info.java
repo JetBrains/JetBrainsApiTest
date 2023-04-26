@@ -12,4 +12,5 @@ module jetbrains.api {
     exports com.jetbrains;
 
     requires static java.desktop;
+
 }
