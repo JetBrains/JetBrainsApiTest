@@ -23,16 +23,22 @@ jobs:
         id: build
         run: |
           bash tools/build.sh full
-          [ -s out/message.txt ] || {
+          MESSAGE="`cat out/message.txt`"
+          if [ "x$MESSAGE" = "x" ] ; then
             echo "Seems like there are no changes in jetbrains.api."
             exit 0
-          }
+          fi
           API_VERSION="`cat out/version.txt`"
           echo "API version: $API_VERSION"
           [[ "$API_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "API version looks incorrect."
             exit 1
           }
+          API_DIFF=${MESSAGE#*\`\`\`}
+          API_DIFF=${API_DIFF%\`\`\`*}
+          [[ "$MESSAGE" = "$API_DIFF" ]] && API_DIFF="" || API_DIFF="-m '$API_DIFF'"
+          echo "API DIFF"
+          echo "$API_DIFF"
           \cp out/api-blob .
           git add api-blob
           git config --global user.name 'JBR API'
