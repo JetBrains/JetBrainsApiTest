@@ -51,6 +51,7 @@ jobs:
       - name: Commit update
         if: ${{steps.build.outputs.SUCCESS}}
         run: |
+          git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}}
           git add api-blob
           git config --global user.name 'JBR API'
           git config --global user.email '${{vars.PUSH_EMAIL}}'
