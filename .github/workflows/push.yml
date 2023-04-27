@@ -4,11 +4,9 @@ on:
     branches: [main]
 permissions:
   contents: write
-env:
-  ACCESS_EMAIL: ${{secrets.ACCESS_EMAIL}}
 jobs:
   update-api:
-    if: github.event.pusher.email != '${{secrets.ACCESS_EMAIL}}'
+    if: github.event.pusher.email != vars.PUSH_EMAIL
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +36,7 @@ jobs:
           \cp out/api-blob .
           git add api-blob
           git config --global user.name 'JBR API'
-          git config --global user.email '${{secrets.ACCESS_EMAIL}}'
+          git config --global user.email '${{vars.PUSH_EMAIL}}'
           git commit -m "v$API_VERSION"
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
