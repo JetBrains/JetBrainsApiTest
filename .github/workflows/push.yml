@@ -19,15 +19,15 @@ jobs:
           bash tools/build.sh full
           [ -s out/message.txt ] || {
             echo "Seems like there are no changes in jetbrains.api."
-            exit 1
+            gh run cancel ${{github.run_id}}
+            gh run watch ${{github.run_id}}
+            exit 0
           }
           API_VERSION="`cat out/version.txt`"
           echo "API version: $API_VERSION"
           [[ "$API_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "API version looks incorrect."
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
-            exit 0
+            exit 1
           }
           \cp out/api-blob .
           git add api-blob
