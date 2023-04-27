@@ -32,7 +32,7 @@ jobs:
           }
           \cp out/api-blob .
           git add api-blob
-          git config --global user.name 'jbrbot'
+          git config --global user.name 'JBR API'
           git config --global user.email 'runtime@jetbrains.com'
           git commit -m "v$API_VERSION"
           git push
