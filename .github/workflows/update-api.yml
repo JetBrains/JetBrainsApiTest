@@ -66,6 +66,8 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            var fs = require('fs');
+            var jar = fs.readFileSync('out/jbr-api-${{steps.build.outputs.API_VERSION}}.jar');
             const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -75,4 +77,14 @@ jobs:
               draft: false,
               prerelease: false,
               generate_release_notes: true,
+            });
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              url: response.data.upload_url,
+              headers: {
+                "content-type": "application/java-archive",
+              },
+              name: "jbrapi.jar",
+              data: jar,
             });
