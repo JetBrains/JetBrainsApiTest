@@ -2,8 +2,6 @@ name: Push
 on:
   push:
     branches: [main]
-permissions:
-  actions: write
 jobs:
   update-api:
     runs-on: ubuntu-latest
@@ -17,12 +15,11 @@ jobs:
 #           java-version: 20
         uses: oracle-actions/setup-java@b9d8cf728e941b3ce91823c84cb792e7602e4687
       - name: Build
+        id: build
         run: |
           bash tools/build.sh full
           [ -s out/message.txt ] || {
             echo "Seems like there are no changes in jetbrains.api."
-            gh run cancel ${{github.run_id}}
-            gh run watch ${{github.run_id}}
             exit 0
           }
           API_VERSION="`cat out/version.txt`"
@@ -38,5 +35,8 @@ jobs:
           git remote set-url origin https://x-access-token:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}
           git commit -m "v$API_VERSION"
           git status
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
+      - name: Test
+        if: ${{steps.build.outputs.SUCCESS}}
+        run: |
+          echo "ABOBA"
