@@ -79,7 +79,18 @@ public class ApiCollector {
         // Calculate hash from all source files on the last round.
         try {
             for (Map.Entry<JavaFileObject, Integer> e : compilationUnitHashMap.entrySet()) {
-                int hash = 31 * e.getValue() + e.getKey().getCharContent(true).hashCode();
+                // Calculate hash the same way String does it, but converting all line breaks to LF.
+                int hash = 0;
+                CharSequence content = e.getKey().getCharContent(true);
+                for (int i = 0; i < content.length(); i++) {
+                    char c = content.charAt(i);
+                    if (c == '\r') {
+                        c = '\n';
+                        if (i < content.length() - 1 && content.charAt(i + 1) == '\n') i++;
+                    }
+                    hash = 31 * hash + c;
+                }
+                hash = 31 * e.getValue() + hash;
                 api.hash ^= hash; // Ignore order of source files.
             }
         } catch (IOException e) {

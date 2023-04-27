@@ -1,20 +1,20 @@
-# $1 - Mode (process/jar/full/<version>)
-# $2 - Boot JDK path
+# $1 - Mode (process/dev/full/<version>)
+# $2 - Boot JDK path (Java 18+)
 # $3 - Output path - *not supported on Windows
 
 # When running on Windows (WSL/Cygwin),
 # all paths must be Unix-style!
 
 # Modes explained:
-#   process   - run annotation processor, check for errors, output messages & API diff, but do not actually compile anything.
-#   jar       - build jbr-api-<version>.jar.
-#   full      - build jbr-api-<version>.jar, jbr-api-<version>-sources.jar, jbr-api-<version>-javadoc.jar
+#   process   - run annotation processor, check for errors, output messages & API diff.
+#   dev       - build jbr-api-SNAPSHOT.jar.
+#   full      - build jbr-api-<version>.jar, jbr-api-<version>-sources.jar, jbr-api-<version>-javadoc.jar.
 #   <version> - full build with manually overridden version.
 
 # Init variables.
 RUN_DIR="`pwd`"
 
-if [ "$1" = "process" ] || [ "$1" = "jar" ] || [ "$1" = "full" ] ; then
+if [ "$1" = "process" ] || [ "$1" = "dev" ] || [ "$1" = "full" ] ; then
   MODE="$1"
   OVERRIDE_API_VERSION=
 else
@@ -101,6 +101,10 @@ $JAVAC -d $OUT/classes/8 -proc:none --release 8 -Xplugin:"CompatibilityPlugin $O
 }
 
 # Read API version.
+if [ "$MODE" = "dev" ] ; then
+  # Use SNAPSHOT version in dev mode.
+  echo "SNAPSHOT" > $OUT/version.txt
+fi
 API_VERSION="`cat $OUT/version.txt`"
 JAR_OUT="$OUT/jbr-api-$API_VERSION.jar"
 SOURCES_OUT="$OUT/jbr-api-$API_VERSION-sources.jar"
@@ -125,7 +129,7 @@ $JAR --create --file="$JAR_OUT" --manifest="tools/templates/MANIFEST.MF" $JAR_MO
   echo -e "\u2757 JAR creation failed, see log for the details." >> "$OUT/message.txt"
   exit 1
 }
-if [ "$MODE" = "jar" ] ; then
+if [ "$MODE" = "dev" ] ; then
   exit 0
 fi
 $JAR --create --file="$SOURCES_OUT" -C "src" . -C "$OUT/gensrc" . || {

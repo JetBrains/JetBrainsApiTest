@@ -51,12 +51,11 @@ public class ApiProcessor extends AbstractProcessor {
         Api.Module newApi = apiCollector.collect(round);
         if (newApi == null) return true;
         try {
-            String message, outputVersion;
+            String message;
             if (versionOverride != null) {
                 // Override API version from options.
                 newApi.version = versionOverride;
                 message = "\u2757 Skipping API checks, version override specified: " + versionOverride + "\n";
-                outputVersion = versionOverride.toString();
             } else {
                 // Read old API info.
                 Api.Module oldApi;
@@ -73,7 +72,6 @@ public class ApiProcessor extends AbstractProcessor {
                 if (compatibility == ApiComparator.Compatibility.SAME) {
                     // Do not print anything if there were no changes.
                     message = null;
-                    outputVersion = oldApi.version.toString();
                 } else {
                     // Put changes into code block.
                     if (out.length() > 0) out.insert(0, "```\n").append("```\n");
@@ -89,7 +87,6 @@ public class ApiProcessor extends AbstractProcessor {
                     }
                     out.append("\nVersion increment: ").append(oldApi.version).append(" -> ").append(newApi.version).append('\n');
                     message = out.toString();
-                    outputVersion = "SNAPSHOT";
                 }
             }
             if (message != null) {
@@ -106,7 +103,7 @@ public class ApiProcessor extends AbstractProcessor {
             try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(output.resolve("api-blob")))) {
                 out.writeObject(newApi);
             }
-            Files.writeString(output.resolve("version.txt"), outputVersion);
+            Files.writeString(output.resolve("version.txt"), newApi.version.toString());
             Files.writeString(output.resolve("message.txt"), message != null ? message : "");
             Files.write(output.resolve("sourcelist8.txt"), apiCollector.getJava8CompilationUnitPaths());
         } catch (IOException e) {
