@@ -36,12 +36,12 @@ jobs:
           }
           API_DIFF=${MESSAGE#*\`\`\`}
           API_DIFF=${API_DIFF%\`\`\`*}
-          [[ "$MESSAGE" = "$API_DIFF" ]] && API_DIFF="" || API_DIFF="-m '$API_DIFF'"
+          [[ "$MESSAGE" = "$API_DIFF" ]] && API_DIFF=""
           \cp out/api-blob .
           git add api-blob
           git config --global user.name 'JBR API'
           git config --global user.email '${{vars.PUSH_EMAIL}}'
-          git commit -m "v$API_VERSION" -m ""
+          git commit -m "v$API_VERSION" -m "$API_DIFF"
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
       - name: Test
