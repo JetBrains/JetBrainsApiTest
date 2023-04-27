@@ -1,0 +1,36 @@
+name: Push
+on:
+  push:
+    branches: [main]
+jobs:
+  update-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.5.2
+      - name: Setup Java JDK
+#         uses: actions/setup-java@v3.9.0
+#         with:
+#           distribution: oracle
+#           java-version: 20
+        uses: oracle-actions/setup-java@b9d8cf728e941b3ce91823c84cb792e7602e4687
+      - name: Build
+        run: |
+          bash tools/build.sh full
+          [ -s out/message.txt ] || {
+            echo "Seems like there are no changes in jetbrains.api."
+            exit 1
+          }
+          API_VERSION="`cat out/version.txt`"
+          echo "API version: $API_VERSION"
+          [[ "$API_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "API version looks incorrect."
+            exit 1
+          }
+          \cp out/api-blob .
+          git add api-blob
+          git config --global user.name 'jbrbot'
+          git config --global user.email 'runtime@jetbrains.com'
+          git remote set-url origin https://x-access-token:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}
+          git commit -m "v$API_VERSION"
+          git status

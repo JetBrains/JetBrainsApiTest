@@ -1,4 +1,4 @@
-name: Comment on the pull request
+name: Comment Pull Request
 on:
   workflow_run:
     workflows: ["Pull Request"]
