@@ -68,8 +68,8 @@ jobs:
           git push --tags
           exit $EXIT_CODE
       - name: Create release
-        if: always() && ${{steps.build.outputs.SUCCESS}}
         uses: actions/github-script@v6.4.1
+        if: always() && ${{steps.build.outputs.SUCCESS}}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
