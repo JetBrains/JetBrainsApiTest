@@ -29,7 +29,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          bash tools/build.sh ${{ inputs.version != '' && inputs.version || 'full' }}
+          bash tools/build.sh ${{ inputs.version != '' && inputs.version || '0.0.0' }}
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
             echo "Seems like there are no changes in jetbrains.api."
@@ -60,3 +60,19 @@ jobs:
           git tag -a "v${{steps.build.outputs.API_VERSION}}" -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}"
           set -e
           git push --tags
+      - name: Create release
+        if: ${{steps.build.outputs.SUCCESS}}
+        uses: actions/github-script@v6.4.1
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const response = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'v${{steps.build.outputs.API_VERSION}}',
+              tag_name: 'v${{steps.build.outputs.API_VERSION}}',
+              body: '${{steps.build.outputs.API_DIFF}}',
+              draft: false,
+              prerelease: false,
+              generate_release_notes: true,
+            });
