@@ -59,12 +59,12 @@ jobs:
         if: ${{steps.build.outputs.SUCCESS}}
         run: |
           EXIT_CODE=0
-          git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}}
           git add api-blob
           git config --global user.name 'JBR API'
           git config --global user.email '${{vars.PUSH_EMAIL}}'
           set +e
           git commit -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
+          git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}} 2> /dev/null
           git tag -a "v${{steps.build.outputs.API_VERSION}}" -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
           set -e
           git push --tags
