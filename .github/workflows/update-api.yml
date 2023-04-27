@@ -50,9 +50,7 @@ jobs:
           git config --global user.email '${{vars.PUSH_EMAIL}}'
           set +e
           git commit -m "v$API_VERSION" -m "$API_DIFF"
-          git tag -a "v$API_VERSION" -m "v$API_VERSION
-          
-          $API_DIFF"
+          git tag -a "v$API_VERSION" -m "v$API_VERSION" -m "$API_DIFF"
           set -e
           git push --tags
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
