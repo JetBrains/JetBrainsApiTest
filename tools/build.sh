@@ -95,7 +95,7 @@ $JAVAC -d $OUT/classes/9 -s $OUT/gensrc --release 9 -Xdoclint:all/protected -Aou
 if [ "$MODE" = "process" ] ; then
   exit 0
 fi
-$JAVAC -d $OUT/classes/8 -proc:none --release 8 -Xplugin:"CompatibilityPlugin $OUT/classes/8 $OUT/classes/9" "@$OUT/sourcelist8.txt" || {
+$JAVAC -d $OUT/classes/8 -proc:none -Xlint:-options --release 8 -Xplugin:"CompatibilityPlugin $OUT/classes/8 $OUT/classes/9" "@$OUT/sourcelist8.txt" || {
   echo -e "\u2757 Compilation failed, see log for the details." > "$OUT/message.txt"
   exit 1
 }
