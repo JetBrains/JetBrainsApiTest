@@ -115,13 +115,13 @@ jobs:
               data: javadoc,
             });
       - name: Configure Pages
-        if: always() && ${{steps.build.outputs.SUCCESS}}
+        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/configure-pages@v3.0.6
       - name: Upload Javadoc Pages artifact
-        if: always() && ${{steps.build.outputs.SUCCESS}}
+        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/upload-pages-artifact@v1.0.8
         with:
           path: 'out/javadoc'
       - name: Deploy Javadoc to Pages
-        if: always() && ${{steps.build.outputs.SUCCESS}}
+        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/deploy-pages@v2.0.1
