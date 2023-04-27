@@ -2,6 +2,8 @@ name: Push
 on:
   push:
     branches: [main]
+permissions:
+  actions: write
 jobs:
   update-api:
     runs-on: ubuntu-latest
@@ -37,4 +39,4 @@ jobs:
           git commit -m "v$API_VERSION"
           git status
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
