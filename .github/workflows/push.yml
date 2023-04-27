@@ -21,6 +21,9 @@ jobs:
       - name: Build
         id: build
         run: |
+          echo "${{github.event.push.pusher.email}}"
+          echo "${{github.event.push.pusher.name}}"
+          echo "${{github.event.push.pusher.username}}"
           bash tools/build.sh full
           [ -s out/message.txt ] || {
             echo "Seems like there are no changes in jetbrains.api."
