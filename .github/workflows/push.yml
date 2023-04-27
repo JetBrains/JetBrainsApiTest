@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3.5.2
+        with:
+          token: ${{secrets.GH_TOKEN}}
       - name: Setup Java JDK
 #         uses: actions/setup-java@v3.9.0
 #         with:
@@ -34,7 +36,7 @@ jobs:
           git add api-blob
           git config --global user.name 'jbrbot'
           git config --global user.email 'runtime@jetbrains.com'
-          git remote set-url origin https://x-access-token:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}
+#          git remote set-url origin https://x-access-token:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}
           git commit -m "v$API_VERSION"
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
