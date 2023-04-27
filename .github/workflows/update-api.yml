@@ -49,7 +49,9 @@ jobs:
           git add api-blob
           git config --global user.name 'JBR API'
           git config --global user.email '${{vars.PUSH_EMAIL}}'
+          set +e
           git commit -m "v$API_VERSION" -m "$API_DIFF"
+          set -e
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
       - name: Test
