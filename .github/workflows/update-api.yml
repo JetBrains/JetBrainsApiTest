@@ -29,8 +29,7 @@ jobs:
       - name: Build
         id: build
         run: |
-          [[ "x${{inputs.version}}" = "x" ]] && BUILD="full" || BUILD="${{inputs.version}}"
-          bash tools/build.sh $BUILD
+          bash tools/build.sh ${{ inputs.version != '' && inputs.version || 'full' }}
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
             echo "Seems like there are no changes in jetbrains.api."
