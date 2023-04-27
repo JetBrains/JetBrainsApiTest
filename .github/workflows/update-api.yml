@@ -24,7 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.5.2
         with:
-          ref: ${{github.head_ref}}
           token: ${{secrets.ACCESS_TOKEN}}
       - name: Setup Java JDK
 #         uses: actions/setup-java@v3.9.0
@@ -68,7 +67,7 @@ jobs:
           git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}} 2> /dev/null
           git tag -a "v${{steps.build.outputs.API_VERSION}}" -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
           set -e
-          git push --tags
+          git push --all
           exit $EXIT_CODE
       - name: Create release
         if: ${{always() && steps.build.outputs.SUCCESS}}
