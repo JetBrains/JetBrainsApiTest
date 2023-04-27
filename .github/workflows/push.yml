@@ -6,7 +6,7 @@ permissions:
   contents: write
 jobs:
   update-api:
-    if: github.event.pusher.email != secrets.ACCESS_EMAIL
+    if: github.event.pusher.email != env.PUSH_EMAIL
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
