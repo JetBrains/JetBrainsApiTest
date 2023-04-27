@@ -1,7 +1,14 @@
-name: Push
+name: Update API
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override API version'
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: write
 jobs:
@@ -22,7 +29,8 @@ jobs:
       - name: Build
         id: build
         run: |
-          bash tools/build.sh full
+          [[ "x${{inputs.version}}" = "x" ]] && BUILD="full" || BUILD="${{inputs.version}}"
+          bash tools/build.sh $BUILD
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
             echo "Seems like there are no changes in jetbrains.api."
