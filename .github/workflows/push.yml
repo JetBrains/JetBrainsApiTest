@@ -8,7 +8,7 @@ env:
   ACCESS_EMAIL: ${{secrets.ACCESS_EMAIL}}
 jobs:
   update-api:
-    if: github.event.pusher.email != '${{env.ACCESS_EMAIL}}'
+    if: github.event.pusher.email != '${{secrets.ACCESS_EMAIL}}'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
