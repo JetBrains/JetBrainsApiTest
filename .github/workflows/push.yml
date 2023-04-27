@@ -36,7 +36,6 @@ jobs:
           git add api-blob
           git config --global user.name 'jbrbot'
           git config --global user.email 'runtime@jetbrains.com'
-#          git remote set-url origin https://x-access-token:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}
           git commit -m "v$API_VERSION"
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
