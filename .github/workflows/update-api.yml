@@ -66,8 +66,13 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            const jarName     = 'jbr-api-${{steps.build.outputs.API_VERSION}}.jar';
+            const sourcesName = 'jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar';
+            const javadocName = 'jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar';
             var fs = require('fs');
-            var jar = fs.readFileSync('out/jbr-api-${{steps.build.outputs.API_VERSION}}.jar');
+            var jar     = fs.readFileSync('out/' + jarName);
+            var sources = fs.readFileSync('out/' + sourcesName);
+            var javadoc = fs.readFileSync('out/' + javadocName);
             const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -82,9 +87,23 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               url: response.data.upload_url,
-              headers: {
-                "content-type": "application/java-archive",
-              },
-              name: "jbrapi.jar",
+              headers: { "content-type": "application/java-archive" },
+              name: jarName,
               data: jar,
+            });
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              url: response.data.upload_url,
+              headers: { "content-type": "application/java-archive" },
+              name: sourcesName,
+              data: sources,
+            });
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              url: response.data.upload_url,
+              headers: { "content-type": "application/java-archive" },
+              name: javadocName,
+              data: javadoc,
             });
