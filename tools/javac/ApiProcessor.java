@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
 
+@SuppressWarnings({"UnnecessaryUnicodeEscape", "unused"})
 @SupportedOptions({"output", "version"})
 @SupportedSourceVersion(SourceVersion.RELEASE_9)
 @SupportedAnnotationTypes("*")
@@ -35,9 +36,9 @@ public class ApiProcessor extends AbstractProcessor {
         Round round = new Round(roundEnvironment);
         for (TypeElement e : set) {
             switch (e.getQualifiedName().toString()) {
-                case "com.jetbrains.Service": round.annotations.service = e; break;
-                case "com.jetbrains.Proxy":   round.annotations.proxy = e;   break;
-                case "com.jetbrains.Client":  round.annotations.client = e;  break;
+                case "com.jetbrains.Service" -> round.annotations.service = e;
+                case "com.jetbrains.Proxy"   -> round.annotations.proxy   = e;
+                case "com.jetbrains.Client"  -> round.annotations.client  = e;
             }
         }
 
@@ -80,11 +81,12 @@ public class ApiProcessor extends AbstractProcessor {
                         out.append("\u2757 There are major changes which require extra attention, they are marked with \"\u2757\".\n");
                     }
                     out.append("Compatibility status of API changes: ").append(compatibility).append(' ');
-                    switch (compatibility) {
-                        case MAJOR: out.append("\uD83E\uDD2F"); break;
-                        case MINOR: out.append("\uD83D\uDD27"); break;
-                        case PATCH: out.append("\uD83D\uDC85"); break;
-                    }
+                    out.append(switch (compatibility) {
+                        case MAJOR -> "\uD83E\uDD2F";
+                        case MINOR -> "\uD83D\uDD27";
+                        case PATCH -> "\uD83D\uDC85";
+                        default    -> "";
+                    });
                     out.append("\nVersion increment: ").append(oldApi.version).append(" -> ").append(newApi.version).append('\n');
                     message = out.toString();
                 }

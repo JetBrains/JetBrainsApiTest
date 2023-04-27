@@ -105,7 +105,7 @@ public class ApiCollector {
 
         @Override
         public Void visitType(TypeElement e, Api api) {
-            if (api == null || !isApi(e)) {
+            if (api == null || isNonApi(e)) {
                 collectAllSupertypes(e.asType(), null);
                 return super.visitType(e, null);
             }
@@ -124,7 +124,7 @@ public class ApiCollector {
 
         @Override
         public Void visitVariable(VariableElement e, Api api) {
-            if (api == null || !isApi(e)) return null;
+            if (api == null || isNonApi(e)) return null;
             Api.Type parent = (Api.Type) api;
             Api.Field field = new Api.Field(parent, e.getSimpleName().toString());
             field.modifiers.addAll(getModifiers(e));
@@ -141,7 +141,7 @@ public class ApiCollector {
 
         @Override
         public Void visitExecutable(ExecutableElement e, Api api) {
-            if (api == null || !isApi(e)) return null;
+            if (api == null || isNonApi(e)) return null;
             Api.Type parent = (Api.Type) api;
             Api.Method method = new Api.Method(parent, e.getSimpleName().toString(),
                     e.getParameters().stream()
@@ -158,9 +158,9 @@ public class ApiCollector {
         }
     };
 
-    private static boolean isApi(Element e) {
+    private static boolean isNonApi(Element e) {
         Set<Modifier> mods = e.getModifiers();
-        return mods.contains(PUBLIC) || mods.contains(PROTECTED);
+        return !mods.contains(PUBLIC) && !mods.contains(PROTECTED);
     }
 
     private static Api.TypeParameter[] getTypeParameters(Parameterizable e) {

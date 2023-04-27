@@ -9,6 +9,7 @@ import static javax.lang.model.element.Modifier.*;
  * Compares API computing compatibility status and textual description of API changes.
  * <a href="https://wiki.eclipse.org/Evolving_Java-based_APIs_2">Useful link.</a>
  */
+@SuppressWarnings("UnnecessaryUnicodeEscape")
 public class ApiComparator {
 
     public static class Node {
@@ -71,9 +72,9 @@ public class ApiComparator {
 
     public enum Compatibility {
         SAME(v -> v),
-        PATCH(v -> new Api.Version(v.major, v.minor, v.patch + 1)),
-        MINOR(v -> new Api.Version(v.major, v.minor + 1, 0)),
-        MAJOR(v -> new Api.Version(v.major + 1, 0, 0));
+        PATCH(v -> new Api.Version(v.major(), v.minor(), v.patch() + 1)),
+        MINOR(v -> new Api.Version(v.major(), v.minor() + 1, 0)),
+        MAJOR(v -> new Api.Version(v.major() + 1, 0, 0));
 
         private final Function<Api.Version, Api.Version> versionIncrement;
         Compatibility(Function<Api.Version, Api.Version> versionIncrement) {

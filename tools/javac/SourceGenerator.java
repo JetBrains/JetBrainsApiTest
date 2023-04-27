@@ -82,6 +82,7 @@ public class SourceGenerator {
                 .collect(Collectors.joining(", "));
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static String replaceTemplate(String src, String placeholder, Iterable<String> statements) {
         int placeholderIndex = src.indexOf(placeholder);
         int indent = 0;

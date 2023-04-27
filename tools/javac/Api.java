@@ -1,18 +1,20 @@
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
 /**
  * Serialized version of the module API.
  */
-@SuppressWarnings("MissingSerialAnnotation")
 public class Api implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public final HashMap<Type, Type> types = new HashMap<>();
 
     public static class Module extends Api implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public Version version;
@@ -20,6 +22,7 @@ public class Api implements Serializable {
     }
 
     public static class Type extends Api implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public final Api parent;
@@ -57,6 +60,7 @@ public class Api implements Serializable {
     }
 
     public static class Field implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public final Type parent;
@@ -90,6 +94,7 @@ public class Api implements Serializable {
     }
 
     public static class Method implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public final Type parent;
@@ -129,31 +134,7 @@ public class Api implements Serializable {
         }
     }
 
-    public static class TypeParameter implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public final String name;
-        public final HashSet<String> bounds;
-
-        public TypeParameter(String name, HashSet<String> bounds) {
-            this.name = name;
-            this.bounds = bounds;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            TypeParameter that = (TypeParameter) o;
-            if (!name.equals(that.name)) return false;
-            return bounds.equals(that.bounds);
-        }
-        @Override
-        public int hashCode() {
-            int result = name.hashCode();
-            result = 31 * result + bounds.hashCode();
-            return result;
-        }
-    }
+    public record TypeParameter(String name, HashSet<String> bounds) implements Serializable {}
 
     enum Deprecation {
         NONE,
@@ -176,15 +157,7 @@ public class Api implements Serializable {
         }
     }
 
-    public static class Version implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public final int major, minor, patch;
-
-        public Version(int major, int minor, int patch) {
-            this.major = major;
-            this.minor = minor;
-            this.patch = patch;
-        }
+    public record Version(int major, int minor, int patch) implements Serializable {
 
         public static Version parse(String value) {
             String[] c = value.split("\\.");
@@ -198,22 +171,6 @@ public class Api implements Serializable {
             throw new IllegalArgumentException("Invalid version component: " + value);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Version version = (Version) o;
-            if (major != version.major) return false;
-            if (minor != version.minor) return false;
-            return patch == version.patch;
-        }
-        @Override
-        public int hashCode() {
-            int result = major;
-            result = 31 * result + minor;
-            result = 31 * result + patch;
-            return result;
-        }
         @Override
         public String toString() {
             return major + "." + minor + "." + patch;

@@ -42,11 +42,11 @@ public class CompatibilityPlugin implements Plugin {
         @Override
         public Void visitAnnotation(AnnotationTree node, String qualifiedName) {
             switch (node.getAnnotationType().toString()) {
-                case "Deprecated":
-                case "java.lang.Deprecated":
+                case "Deprecated", "java.lang.Deprecated" -> {
                     // @Deprecated didn't have any members in Java 8, so clear it.
                     var jca = (JCTree.JCAnnotation) node;
-                    jca.args = com.sun.tools.javac.util.List.nil();
+                    jca.args = List.nil();
+                }
             }
             return super.visitAnnotation(node, qualifiedName);
         }
@@ -68,7 +68,7 @@ public class CompatibilityPlugin implements Plugin {
             if (qualifiedName.equals("com.jetbrains.JBR") &&
                     node.getName().toString().equals("getApiVersionFromModule")) {
                 var body = (JCTree.JCBlock) node.getBody();
-                body.stats = com.sun.tools.javac.util.List.of(treeMaker.Return(treeMaker.Literal("UNKNOWN")));
+                body.stats = List.of(treeMaker.Return(treeMaker.Literal("UNKNOWN")));
             }
             return super.visitMethod(node, qualifiedName);
         }
