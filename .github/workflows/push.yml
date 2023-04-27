@@ -6,6 +6,7 @@ permissions:
   contents: write
 jobs:
   update-api:
+    if: github.event.pusher.email != secrets.ACCESS_EMAIL
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,9 +22,6 @@ jobs:
       - name: Build
         id: build
         run: |
-          echo "${{github.event.pusher.email}}"
-          echo "${{github.event.pusher.name}}"
-          echo "${{github.event.pusher.username}}"
           bash tools/build.sh full
           [ -s out/message.txt ] || {
             echo "Seems like there are no changes in jetbrains.api."
@@ -38,7 +36,7 @@ jobs:
           \cp out/api-blob .
           git add api-blob
           git config --global user.name 'JBR API'
-          git config --global user.email 'runtime@jetbrains.com'
+          git config --global user.email '${{secrets.ACCESS_EMAIL}}'
           git commit -m "v$API_VERSION"
           git push
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
