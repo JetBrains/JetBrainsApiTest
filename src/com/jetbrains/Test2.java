@@ -17,5 +17,7 @@ public final class Test2 {
     public void c() {}
     /** Javadoc. */
     public void d() {}
+    /** Javadoc. */
+    public void e() {}
 
 }
