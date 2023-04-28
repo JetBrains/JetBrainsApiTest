@@ -90,7 +90,7 @@ jobs:
         uses: actions/github-script@v6.4.1
         env:
           API_VERSION: ${{needs.commit.outputs.API_VERSION}}
-          API_DIFF: ```${{needs.commit.outputs.API_DIFF}}```
+          API_DIFF: ${{needs.commit.outputs.API_DIFF}}
         with:
           script: |
             const versionName = 'jbr-api-' + process.env.API_VERSION;
@@ -106,7 +106,7 @@ jobs:
               repo: context.repo.repo,
               name: 'v' + process.env.API_VERSION,
               tag_name: 'v' + process.env.API_VERSION,
-              body: process.env.API_DIFF,
+              body: '```' + process.env.API_DIFF + '```',
               draft: false,
               prerelease: false,
               generate_release_notes: true,
