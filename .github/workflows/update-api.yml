@@ -6,20 +6,19 @@ on:
     inputs:
       version:
         description: 'Override API version'
-        required: false
-        default: ''
+        required: true
         type: string
-permissions:
-  contents: write
-  pages: write
-  id-token: write
 concurrency:
   group: update-api
   cancel-in-progress: false
 jobs:
-  update-api:
-    if: github.event.pusher.email != vars.PUSH_EMAIL
+  commit:
+#    if: github.event.pusher.email != vars.PUSH_EMAIL
     runs-on: ubuntu-latest
+    outputs:
+      CHANGES: ${{steps.build.outputs.CHANGES}}
+      API_VERSION: ${{steps.build.outputs.API_VERSION}}
+      API_DIFF: ${{steps.build.outputs.API_DIFF}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3.5.2
@@ -34,6 +33,9 @@ jobs:
       - name: Build
         id: build
         run: |
+          echo "${{github.event.pusher.email}}"
+          echo "${{github.event.pusher.name}}"
+          echo "${{github.event.pusher.username}}"
           bash tools/build.sh ${{ inputs.version != '' && inputs.version || 'full' }}
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
@@ -53,35 +55,50 @@ jobs:
           echo "API_DIFF<<API_DIFF_EOF" >> $GITHUB_OUTPUT
           echo "${API_DIFF}API_DIFF_EOF" >> $GITHUB_OUTPUT
           echo "API_VERSION=$API_VERSION" >> "$GITHUB_OUTPUT"
-          echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
+          echo "CHANGES=true" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact jars
+        if: ${{steps.build.outputs.CHANGES}}
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: jars
+          path: |
+            out/jbr-api-${{steps.build.outputs.API_VERSION}}.jar
+            out/jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar
+            out/jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar
       - name: Commit update
-        id: commit
-        if: ${{steps.build.outputs.SUCCESS}}
+        if: ${{steps.build.outputs.CHANGES}}
+        env:
+          API_VERSION: ${{steps.build.outputs.API_VERSION}}
+          API_DIFF: ${{steps.build.outputs.API_DIFF}}
         run: |
-          EXIT_CODE=0
           git add api-blob
           git config --global user.name 'JBR API'
           git config --global user.email '${{vars.PUSH_EMAIL}}'
-          set +e
-          git commit -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
-          git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}} 2> /dev/null
-          git tag -a "v${{steps.build.outputs.API_VERSION}}" -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
-          echo "API_DIFF<<API_DIFF_EOF" >> $GITHUB_OUTPUT
-          echo '\`\`\`' >> $GITHUB_OUTPUT
-          git log --format=%b -n 1 "v${{steps.build.outputs.API_VERSION}}" >> $GITHUB_OUTPUT
-          echo '\`\`\`' >> $GITHUB_OUTPUT
-          echo "API_DIFF_EOF" >> $GITHUB_OUTPUT
-          set -e
+          git commit -m "v$API_VERSION" -m "$API_DIFF"
+          git tag -a "v$API_VERSION" -m "v$API_VERSION" -m "$API_DIFF"
           git push --all
-          exit $EXIT_CODE
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: commit
+    if: ${{needs.commit.outputs.CHANGES}}
+    steps:
+      - name: Download artifact jars
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: jars
       - name: Create release
-        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/github-script@v6.4.1
+        env:
+          API_VERSION: ${{needs.commit.outputs.API_VERSION}}
+          API_DIFF: ${{needs.commit.outputs.API_DIFF}}
         with:
           script: |
-            const jarName     = 'jbr-api-${{steps.build.outputs.API_VERSION}}.jar';
-            const sourcesName = 'jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar';
-            const javadocName = 'jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar';
+            const versionName = 'jbr-api-' + process.env.API_VERSION;
+            const jarName     = versionName + '.jar';
+            const sourcesName = versionName + '-sources.jar';
+            const javadocName = versionName + '-javadoc.jar';
             var fs = require('fs');
             var jar     = fs.readFileSync('out/' + jarName);
             var sources = fs.readFileSync('out/' + sourcesName);
@@ -89,9 +106,9 @@ jobs:
             const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              name: 'v${{steps.build.outputs.API_VERSION}}',
-              tag_name: 'v${{steps.build.outputs.API_VERSION}}',
-              body: `${{steps.commit.outputs.API_DIFF}}`,
+              name: 'v' + process.env.API_VERSION,
+              tag_name: 'v' + process.env.API_VERSION,
+              body: process.env.API_DIFF,
               draft: false,
               prerelease: false,
               generate_release_notes: true,
@@ -120,14 +137,27 @@ jobs:
               name: javadocName,
               data: javadoc,
             });
+  deploy-pages:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    needs: commit
+    if: ${{needs.commit.outputs.CHANGES}}
+    steps:
+      - name: Download artifact jars
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: jars
+      - name: Unzip Javadoc jar
+        env:
+          API_VERSION: ${{needs.commit.outputs.API_VERSION}}
+        run: unzip jbr-api-${API_VERSION}-javadoc.jar -d javadoc
       - name: Configure Pages
-        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/configure-pages@v3.0.6
       - name: Upload Javadoc Pages artifact
-        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/upload-pages-artifact@v1.0.8
         with:
-          path: 'out/javadoc'
+          path: 'javadoc'
       - name: Deploy Javadoc to Pages
-        if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/deploy-pages@v2.0.1
