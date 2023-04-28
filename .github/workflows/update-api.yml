@@ -2,18 +2,19 @@ name: Update API
 on:
   push:
     branches: [main]
+    paths-ignore: [api-blob]
   workflow_dispatch:
     inputs:
       version:
         description: 'Override API version'
-        required: true
+        default: ''
+        required: false
         type: string
 concurrency:
   group: update-api
   cancel-in-progress: false
 jobs:
   commit:
-#    if: github.event.pusher.email != vars.PUSH_EMAIL
     runs-on: ubuntu-latest
     outputs:
       CHANGES: ${{steps.build.outputs.CHANGES}}
@@ -33,9 +34,6 @@ jobs:
       - name: Build
         id: build
         run: |
-          echo "${{github.event.pusher.email}}"
-          echo "${{github.event.pusher.name}}"
-          echo "${{github.event.pusher.username}}"
           bash tools/build.sh ${{ inputs.version != '' && inputs.version || 'full' }}
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
@@ -100,9 +98,9 @@ jobs:
             const sourcesName = versionName + '-sources.jar';
             const javadocName = versionName + '-javadoc.jar';
             var fs = require('fs');
-            var jar     = fs.readFileSync('out/' + jarName);
-            var sources = fs.readFileSync('out/' + sourcesName);
-            var javadoc = fs.readFileSync('out/' + javadocName);
+            var jar     = fs.readFileSync(jarName);
+            var sources = fs.readFileSync(sourcesName);
+            var javadoc = fs.readFileSync(javadocName);
             const response = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
