@@ -68,7 +68,9 @@ jobs:
           git fetch origin +refs/tags/v${{steps.build.outputs.API_VERSION}}:refs/tags/v${{steps.build.outputs.API_VERSION}} 2> /dev/null
           git tag -a "v${{steps.build.outputs.API_VERSION}}" -m "v${{steps.build.outputs.API_VERSION}}" -m "${{steps.build.outputs.API_DIFF}}" || EXIT_CODE=1
           echo "API_DIFF<<API_DIFF_EOF" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
           git log --format=%b -n 1 "v${{steps.build.outputs.API_VERSION}}" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
           echo "API_DIFF_EOF" >> $GITHUB_OUTPUT
           set -e
           git push --all
