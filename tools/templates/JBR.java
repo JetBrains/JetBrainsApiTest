@@ -77,10 +77,12 @@ public final class JBR {
 
     /**
      * Returns JBR API version.
+     * Development versions of JBR API return "SNAPSHOT".
+     * When running on Java 8, returns "UNKNOWN".
      * <h4>Note:</h4>
-     * This is an API version, which comes with client application,
-     * it is a compile-time constant and has nothing to do with JRE it runs on.
-     * @return JBR API version in form {@code JBR.MAJOR.MINOR.PATCH}
+     * This is an API version, which comes with client application, it is *almost*
+     * a compile-time constant and has nothing to do with JRE it runs on.
+     * @return JBR API version in form {@code MAJOR.MINOR.PATCH}, or "SNAPSHOT" / "UNKNOWN".
      */
     public static String getApiVersion() {
         return API_VERSION;
