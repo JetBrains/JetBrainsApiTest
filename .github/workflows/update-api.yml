@@ -86,7 +86,7 @@ jobs:
               repo: context.repo.repo,
               name: 'v${{steps.build.outputs.API_VERSION}}',
               tag_name: 'v${{steps.build.outputs.API_VERSION}}',
-              body: '${{steps.build.outputs.API_DIFF}}',
+              body: `${{steps.build.outputs.API_DIFF}}`,
               draft: false,
               prerelease: false,
               generate_release_notes: true,
