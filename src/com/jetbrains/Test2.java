@@ -5,4 +5,5 @@ package com.jetbrains;
  */
 public final class Test2 {
     private Test2() {}
+
 }

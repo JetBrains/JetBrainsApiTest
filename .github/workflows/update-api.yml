@@ -73,7 +73,6 @@ jobs:
         if: ${{always() && steps.build.outputs.SUCCESS}}
         uses: actions/github-script@v6.4.1
         with:
-          github-token: ${{secrets.ACCESS_TOKEN}}
           script: |
             const jarName     = 'jbr-api-${{steps.build.outputs.API_VERSION}}.jar';
             const sourcesName = 'jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar';
