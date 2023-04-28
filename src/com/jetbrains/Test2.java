@@ -19,5 +19,7 @@ public final class Test2 {
     public void d() {}
     /** Javadoc. */
     public void e() {}
+    /** Javadoc. */
+    public void f() {}
 
 }

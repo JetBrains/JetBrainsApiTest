@@ -106,7 +106,7 @@ jobs:
               repo: context.repo.repo,
               name: 'v' + process.env.API_VERSION,
               tag_name: 'v' + process.env.API_VERSION,
-              body: '```' + process.env.API_DIFF + '```',
+              body: '```' + process.env.API_DIFF + '\n```',
               draft: false,
               prerelease: false,
               generate_release_notes: true,
