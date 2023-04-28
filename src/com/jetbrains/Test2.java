@@ -9,4 +9,6 @@ public final class Test2 {
     public void foo() {}
     /** Javadoc. */
     public void bar() {}
+    /** Javadoc. */
+    public void a() {}
 }

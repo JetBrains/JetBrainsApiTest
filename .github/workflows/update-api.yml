@@ -51,8 +51,7 @@ jobs:
           [[ "$MESSAGE" = "$API_DIFF" ]] && API_DIFF=""
           \cp out/api-blob .
           echo "API_DIFF<<API_DIFF_EOF" >> $GITHUB_OUTPUT
-          echo "$API_DIFF" >> $GITHUB_OUTPUT
-          echo "API_DIFF_EOF" >> $GITHUB_OUTPUT
+          echo "${API_DIFF}API_DIFF_EOF" >> $GITHUB_OUTPUT
           echo "API_VERSION=$API_VERSION" >> "$GITHUB_OUTPUT"
           echo "SUCCESS=true" >> "$GITHUB_OUTPUT"
       - name: Commit update
