@@ -103,7 +103,7 @@ $JAVAC -d $OUT/classes/8 -proc:none -Xlint:-options --release 8 -Xplugin:"Compat
 # Read API version.
 if [ "$MODE" = "dev" ] ; then
   # Use SNAPSHOT version in dev mode.
-  echo "SNAPSHOT" > $OUT/version.txt
+  echo -n "SNAPSHOT" > $OUT/version.txt
 fi
 API_VERSION="`cat $OUT/version.txt`"
 JAR_OUT="$OUT/jbr-api-$API_VERSION.jar"
