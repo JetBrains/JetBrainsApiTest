@@ -2,6 +2,7 @@ private static class $__Holder {<DEPRECATED>
     private static final $ INSTANCE = getService($.class, <FALLBACK>);
 }
 /**
+ * Checks whether {@link $} service is supported by the runtime.
  * @return true if current runtime has implementation for all methods in {@link $}
  * and its dependencies (can fully implement given service).
  * @see #get$()

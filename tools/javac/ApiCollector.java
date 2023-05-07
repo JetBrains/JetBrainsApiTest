@@ -116,7 +116,11 @@ public class ApiCollector {
             type.typeParameters = getTypeParameters(e);
             type.deprecation = getDeprecationStatus(e);
             type.usage = getUsage(e);
-            if (type.usage == Api.Usage.DEFAULT && !type.modifiers.contains(FINAL)) nonAnnotatedUnusedApiTypes.add(e);
+            if (type.usage == Api.Usage.DEFAULT &&
+                !type.modifiers.contains(FINAL) &&
+                (e.getKind() == ElementKind.CLASS || e.getKind() == ElementKind.INTERFACE)) {
+                nonAnnotatedUnusedApiTypes.add(e);
+            }
             super.visitType(e, type);
             api.types.put(type, type);
             return null;
