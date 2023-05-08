@@ -158,7 +158,7 @@ rm -rf "$OUT/javadoc"
 $JAVADOC -d "$OUT/javadoc" --release 9 -Xdoclint:all -encoding ascii -Werror -quiet $JAVADOC_TAGS \
   -doctitle "JBR API v$API_VERSION" \
   -windowtitle "JBR API v$API_VERSION" \
-  -header "<h1 style='margin:10px 0px 0px 0px;font-family:$FONT_MONO;'>JBR API v$API_VERSION</h1>" \
+  -header "<h1 style='margin:8px 0px 0px 0px;font-family:$FONT_MONO;'>JBR API v$API_VERSION</h1>" \
    "src/module-info.java" "@$OUT/sourcelist8.txt" || {
   echo -e "\u2757 Javadoc generation failed, see log for the details." >> "$OUT/message.txt"
   exit 1
