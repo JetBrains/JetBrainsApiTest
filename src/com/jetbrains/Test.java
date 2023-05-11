@@ -29,5 +29,11 @@ package com.jetbrains;
 @Service
 public interface Test {
 
+    /**
+     * Javadoc.
+     * @return fafafa
+     */
+    Object clone();
+
 //    void hello();
 }
