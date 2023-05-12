@@ -207,7 +207,7 @@ Code in JBR API must conform to Java 8 with the following exceptions:
    > ```shell
    > bash tools/build.sh full /path/to/jdk
    > ```
-   > There are other build types other than `full`,
+   > There are other build types than `full`,
    > see `build.sh` for more info.
 
 3. Create a new feature branch. You may need to update remote to your
@@ -378,7 +378,7 @@ update supported version inside JBR to this new version -
 `SUPPORTED_VERSION` field in
 `JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java`.**
 
-> **_Note_**: JBR changes *must not* be pushed into stable/development branches
+> **_Warning_**: JBR changes *must not* be pushed into stable/development branches
 > until JBR API changes are merged and implementation version is updated in JBR.
 > However, it's advised that you do a branch review of both JBR and JBR API
 > simultaneously, providing a link to one another to give reviewer more context.
@@ -399,5 +399,5 @@ Just a few last words to make your life easier and JBR API better:
 3. Don't break compatibility - major changes are always long planned,
    with everything possible done to mitigate the impact of incompatible
    changes. If that's not your case - you are doing wrong.
-4. When in doubts, contact me, I will try to help - @nikita.gubarkov.
+4. When in doubts, contact me, I will try to help - **@nikita.gubarkov**.
    

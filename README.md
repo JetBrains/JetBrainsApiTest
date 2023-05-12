@@ -8,7 +8,7 @@ features at runtime without worrying about compatibility and runtime errors.
 
 JBR API automatically translates calls to itself into
 [JBR](https://github.com/JetBrains/JetBrainsRuntime).
-When needed functionality is unavailable (e.g. when running on other JRE,
+When needed functionality is unavailable (e.g. when running on another JRE,
 or incompatible JBR version), this is reported in a safe manner and no
 linkage errors occur.
 
