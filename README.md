@@ -30,7 +30,12 @@ if (service != null) {
     service.doSomething();
 }
 ```
-> **_Note_**: more details with a list of available services can be found in the
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+> </picture><br>
+>
+> More details with a list of available services can be found in the
 > [javadoc](https://jetbrains.github.io/JetBrainsApiTest).
 
 
@@ -41,7 +46,12 @@ API and implementation versions can be retrieved from `JBR` class too:
 * `JBR.getApiVersion()` - version of the `jbr-api.jar` currently used.
 * `JBR.getImplVersion()` - version of JBR API implemented by the current runtime.
 
-> **_Note_**: although JBR API version does reflect compatibility of API
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/info.svg">
+>   <img alt="Info" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/info.svg">
+> </picture><br>
+>
+> Although JBR API version does reflect compatibility of API
 > changes, it is not used for any kind of compatibility checks, including
 > determining service availability. That means that in practice some services
 > will continue to work across multiple major releases.

@@ -191,7 +191,12 @@ Code in JBR API must conform to Java 8 with the following exceptions:
 2. `cd JetBrainsRuntime` and `make jbr-api` - this will initialize nested repo
    under `JetBrainsRuntime/jbr-api` and build JBR API.
 
-   > **_Note_**: if you have previously built JBR API, `make jbr-api`
+   > <picture>
+   >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+   >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+   > </picture><br>
+   >
+   > If you have previously built JBR API, `make jbr-api`
    > may issue a warning about outdated branch, it's advised to keep
    > your branch up-to-date with `origin/main`.
 
@@ -202,7 +207,12 @@ Code in JBR API must conform to Java 8 with the following exceptions:
    new JBR API is to add it as Maven artifact, it will be updated
    automatically every time you build it with `make jbr-api`.
 
-   > **_Note_**: if needed, JBR API can be built standalone,
+   > <picture>
+   >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+   >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+   > </picture><br>
+   >
+   > If needed, JBR API can be built standalone,
    > it only requires any JDK 18 or newer:
    > ```shell
    > bash tools/build.sh full /path/to/jdk
@@ -220,7 +230,11 @@ Code in JBR API must conform to Java 8 with the following exceptions:
 Usually you start by adding a new *service*.
 It is an interface in `com.jetbrains` package marked with `@Service` annotation.
 
-> **_Example_**:
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
 > ```java
 > // JetBrainsRuntime/jbr-api/src/com/jetbrains/MyService.java
 > package com.jetbrains;
@@ -238,7 +252,11 @@ for the corresponding module containing the target implementation.
 Class names are
 [binary names](https://docs.oracle.com/javase/9/docs/api/java/lang/ClassLoader.html#name).
 
-> **_Example_**:
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
 > ```java
 > // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
 > // ...
@@ -260,7 +278,12 @@ Class names are
 > // ...
 > ```
 
-> **_Note_**: visibility modifiers don't matter here:
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+> </picture><br>
+>
+> Visibility modifiers don't matter here:
 > target implementation can be private and in non-exported package,
 > but still be discoverable by JBR API.
 
@@ -268,7 +291,11 @@ Interface methods can be also mapped directly to static methods inside JBR,
 *service* can even not have its implementation class at all, with all methods
 mapped statically.
 
-> **_Example_**:
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
 > ```jshelllanguage
 > // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
 > // ...
@@ -287,7 +314,12 @@ mapped statically.
 > // ...
 > ```
 
-> **_Note_**: `.service()` and `.withStatic()` mapping methods accept variable
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+> </picture><br>
+>
+> `.service()` and `.withStatic()` mapping methods accept variable
 > number of target classes. The first one found is used when binding the
 > implementation. This is useful when you need to specify different implementations
 > for different platforms - just specify all of them and first found wins.
@@ -305,7 +337,12 @@ the following table summarizes usage of annotations with supported mapping types
 | `@Proxy` & <br/> `@Client` | Annotated interface is a *proxy*, but can also be implemented by *client*. It *may* be a *dynamic two-way proxy*.                                                               | `.proxy()` or `.twoWayProxy()` |
 | none                       | Only applicable to `final` classes. It still *may* be a *client proxy*, so that implementation is contained in `jetbrains.api` itself, without need to be subclassed by *user*. | `.clientProxy()` or none       |
 
-> **_Note_**: All interfaces and classes in `jetbrains.api` module *must*
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/info.svg">
+>   <img alt="Info" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/info.svg">
+> </picture><br>
+>
+> All interfaces and classes in `jetbrains.api` module *must*
 > either be annotated *and* inheritable, *or* be `final`.
 > These annotations are not only needed for mapping to work,
 > but also indicate the intended usage of the annotated class/interface.
@@ -313,7 +350,11 @@ the following table summarizes usage of annotations with supported mapping types
 When objects with defined mapping are passed between *client* and *JBR*,
 they are automatically converted by wrapping/unwrapping proxy objects.
 
-> **_Example_**:
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
 > ```jshelllanguage
 > // jetbrains.api
 > @Service
@@ -349,13 +390,23 @@ all mapped types, reachable from that service, that means that failure
 to find implementation for a proxy type, used (even indirectly) by a
 service, will render that service unsupported.
 
-> **_Example_**: if we rename `Bar#doSomething` to `Bar#doAnother` in
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
+> If we rename `Bar#doSomething` to `Bar#doAnother` in
 > previous example, JBR API backend will fail to bind `Foo` and `Bar`
 > together due to missing implementation for `Foo#doSomething`.
 > This will cause whole `MyService` to become unavailable, resulting
 > in `JBR.getMyService()` returning `null`.
 
-> **_Note_**: You can troubleshoot mapping (and not only) issues by using
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+> </picture><br>
+>
+> You can troubleshoot mapping (and not only) issues by using
 > `-Djetbrains.api.verbose=true` system property when running your tests.
 
 When building JBR API via `make jbr-api` or `build.sh`, it will report
@@ -378,7 +429,12 @@ update supported version inside JBR to this new version -
 `SUPPORTED_VERSION` field in
 `JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java`.**
 
-> **_Warning_**: JBR changes *must not* be pushed into stable/development branches
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/warning.svg">
+>   <img alt="Warning" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/warning.svg">
+> </picture><br>
+>
+> JBR changes *must not* be pushed into stable/development branches
 > until JBR API changes are merged and implementation version is updated in JBR.
 > However, it's advised that you do a branch review of both JBR and JBR API
 > simultaneously, providing a link to one another to give reviewer more context.
