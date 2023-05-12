@@ -20,7 +20,7 @@ unit of JBR API. Each service has two related methods in `JBR` class:
 * `JBR.get<NAME>()` - returns service instance if it's supported, or null.
 * `JBR.is<NAME>Supported()` - convenience method, equivalent of `JBR.get<NAME>() != null`.
 
-```jshelllanguage
+```java
 if (JBR.isSomeServiceSupported()) {
     JBR.getSomeService().doSomething();
 }

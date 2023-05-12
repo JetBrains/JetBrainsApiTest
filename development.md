@@ -34,7 +34,7 @@ called by *client*.
 │╰─────────────╯│           │╰─────────────╯│  
 ╰───────────────╯           ╰───────────────╯    
 ```
-```jshelllanguage
+```java
 // jetbrains.api
 @Proxy
 public interface Foo {
@@ -74,7 +74,7 @@ void hello(Foo foo) {
 │╰─────────────╯│           │╰─────────────╯│  
 ╰───────────────╯           ╰───────────────╯    
 ```
-```jshelllanguage
+```java
 Foo foo = JBR.getFoo();
 if (foo != null) foo.doSomething();
 ```
@@ -94,7 +94,7 @@ called by *JBR*. This type can be used for callbacks.
 │╰─────────────╯│           │╰─────────────╯│  
 ╰───────────────╯           ╰───────────────╯    
 ```
-```jshelllanguage
+```java
 // jetbrains.api
 @Client
 public interface Foo {
@@ -139,7 +139,7 @@ with automatic dynamic conversion, so that implementation can be on either side.
 │╰─────────────╯│           │╰─────────────╯│  
 ╰───────────────╯           ╰───────────────╯    
 ```
-```jshelllanguage
+```java
 // jetbrains.api
 @Client
 @Proxy
@@ -267,7 +267,7 @@ Class names are
 > }
 > // ...
 > ```
-> ```jshelllanguage
+> ```java
 > // JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java
 > // ...
 > JBRApi.registerModule("com.jetbrains.base.JBRApiModule") // this is for java.base
@@ -296,7 +296,7 @@ mapped statically.
 >   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
 > </picture><br>
 >
-> ```jshelllanguage
+> ```java
 > // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
 > // ...
 > private static void printForJBRApi(String string) {
@@ -304,7 +304,7 @@ mapped statically.
 > }
 > // ...
 > ```
-> ```jshelllanguage
+> ```java
 > // JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java
 > // ...
 > JBRApi.registerModule("com.jetbrains.desktop.JBRApiModule")
@@ -355,7 +355,7 @@ they are automatically converted by wrapping/unwrapping proxy objects.
 >   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
 > </picture><br>
 >
-> ```jshelllanguage
+> ```java
 > // jetbrains.api
 > @Service
 > public interface MyService {
