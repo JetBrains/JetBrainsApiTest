@@ -63,5 +63,6 @@ API and implementation versions can be retrieved from `JBR` class too:
 > *_Versions should not be used for any purpose other than logging._
 
 ---
+* [JBR API documentation](https://jetbrains.github.io/JetBrainsApiTest)
 * [JBR API development guide](development.md)
 * [JetBrainsRuntime (JBR)](https://github.com/JetBrains/JetBrainsRuntime)
