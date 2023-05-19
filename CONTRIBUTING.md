@@ -326,16 +326,16 @@ mapped statically.
 
 Different mapping types are registered similarly: `.proxy()`, `.clientProxy()`,
 `.twoWayProxy()`, see Javadoc for more details. Each mapping type requires
-corresponding annotation to be placed on interfaces in `jetbrains.api` module, 
+corresponding annotation to be placed on types in `jetbrains.api` module, 
 the following table summarizes usage of annotations with supported mapping types:
 
-| Annotations                | Meaning                                                                                                                                                                         | Mapping                        |
-|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `@Service`                 | Annotated interface is a *service*, it gets `JBR.get<NAME>()` and `JBR.is<NAME>Supported()` methods.                                                                            | `.service()`                   |
-| `@Proxy`                   | Annotated interface is a *proxy*, it is implemented on *JBR* side.                                                                                                              | `.proxy()`                     |
-| `@Client`                  | Annotated class/interface is intended to be implemented by *client*. It *may* be a *client proxy*.                                                                              | `.clientProxy()` or none       |
-| `@Proxy` & <br/> `@Client` | Annotated interface is a *proxy*, but can also be implemented by *client*. It *may* be a *dynamic two-way proxy*.                                                               | `.proxy()` or `.twoWayProxy()` |
-| none                       | Only applicable to `final` classes. It still *may* be a *client proxy*, so that implementation is contained in `jetbrains.api` itself, without need to be subclassed by *user*. | `.clientProxy()` or none       |
+| Annotations                | Meaning                                                                                                      | Mapping                        |
+|----------------------------|--------------------------------------------------------------------------------------------------------------|--------------------------------|
+| `@Service`                 | Annotated type is a *service*, it gets `JBR.get<NAME>()` and `JBR.is<NAME>Supported()` methods.              | `.service()`                   |
+| `@Proxy`                   | Annotated type is a *proxy*, it is implemented on *JBR* side.                                                | `.proxy()`                     |
+| `@Client`                  | Annotated type is intended to be implemented by *client*. It *may* be a *client proxy*.                      | `.clientProxy()` or none       |
+| `@Proxy` & <br/> `@Client` | Annotated type is a *proxy*, but can also be implemented by *client*. It *may* be a *dynamic two-way proxy*. | `.proxy()` or `.twoWayProxy()` |
+| none                       | Only applicable to `final` types.                                                                            | none                           |
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/info.svg">

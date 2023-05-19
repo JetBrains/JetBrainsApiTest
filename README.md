@@ -1,3 +1,5 @@
+[![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
 # JBR API
 
 **_JBR API_** is an interface for
@@ -64,5 +66,5 @@ API and implementation versions can be retrieved from `JBR` class too:
 
 ---
 * [JBR API documentation](https://jetbrains.github.io/JetBrainsApiTest)
-* [JBR API development guide](development.md)
+* [JBR API development guide](CONTRIBUTING.md)
 * [JetBrainsRuntime (JBR)](https://github.com/JetBrains/JetBrainsRuntime)

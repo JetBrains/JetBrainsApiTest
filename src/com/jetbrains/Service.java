@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Marks JBR API service.
  * Services are available via {@code JBR#is<NAME>Available()} and {@code JBR#get<NAME>()}.
- * Service interfaces must not be implemented by client code.
+ * Service types must not be implemented/extended by client code.
  */
 @Target(TYPE)
 @Retention(RUNTIME)
