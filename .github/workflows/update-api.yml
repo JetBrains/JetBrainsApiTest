@@ -10,6 +10,21 @@ on:
         default: ''
         required: false
         type: string
+      push:
+        description: 'Push new version and tag'
+        default: true
+        required: true
+        type: boolean
+      release:
+        description: 'Make release'
+        default: true
+        required: true
+        type: boolean
+      javadoc:
+        description: 'Update Javadoc'
+        default: true
+        required: true
+        type: boolean
 concurrency:
   group: update-api
   cancel-in-progress: false
@@ -64,7 +79,7 @@ jobs:
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar
       - name: Commit update
-        if: ${{steps.build.outputs.CHANGES}}
+        if: ${{steps.build.outputs.CHANGES && inputs.push}}
         env:
           API_VERSION: ${{steps.build.outputs.API_VERSION}}
           API_DIFF: ${{steps.build.outputs.API_DIFF}}
@@ -80,7 +95,7 @@ jobs:
     permissions:
       contents: write
     needs: commit
-    if: ${{needs.commit.outputs.CHANGES}}
+    if: ${{needs.commit.outputs.CHANGES && inputs.release}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
@@ -141,7 +156,7 @@ jobs:
       pages: write
       id-token: write
     needs: commit
-    if: ${{needs.commit.outputs.CHANGES}}
+    if: ${{needs.commit.outputs.CHANGES && inputs.javadoc}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
