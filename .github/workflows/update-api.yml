@@ -43,7 +43,7 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v4.0.0
         with:
-          distribution: oracle
+          distribution: temurin
           java-version: 21
       - name: Build
         id: build
