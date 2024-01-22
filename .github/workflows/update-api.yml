@@ -29,7 +29,7 @@ concurrency:
   group: update-api
   cancel-in-progress: false
 jobs:
-  commit:
+  build:
     runs-on: ubuntu-latest
     outputs:
       CHANGES: ${{steps.build.outputs.CHANGES}}
@@ -77,7 +77,7 @@ jobs:
             out/jbr-api-${{steps.build.outputs.API_VERSION}}.jar
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar
-      - name: Commit update
+      - name: Push update
         if: ${{steps.build.outputs.CHANGES && inputs.push}}
         env:
           API_VERSION: ${{steps.build.outputs.API_VERSION}}
@@ -93,8 +93,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: commit
-    if: ${{needs.commit.outputs.CHANGES && inputs.release}}
+    needs: build
+    if: ${{needs.build.outputs.CHANGES && inputs.release}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
@@ -103,8 +103,8 @@ jobs:
       - name: Create release
         uses: actions/github-script@v6.4.1
         env:
-          API_VERSION: ${{needs.commit.outputs.API_VERSION}}
-          API_DIFF: ${{needs.commit.outputs.API_DIFF}}
+          API_VERSION: ${{needs.build.outputs.API_VERSION}}
+          API_DIFF: ${{needs.build.outputs.API_DIFF}}
         with:
           script: |
             const versionName = 'jbr-api-' + process.env.API_VERSION;
@@ -154,8 +154,8 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    needs: commit
-    if: ${{needs.commit.outputs.CHANGES && inputs.javadoc}}
+    needs: build
+    if: ${{needs.build.outputs.CHANGES && inputs.javadoc}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
@@ -163,7 +163,7 @@ jobs:
           name: jars
       - name: Unzip Javadoc jar
         env:
-          API_VERSION: ${{needs.commit.outputs.API_VERSION}}
+          API_VERSION: ${{needs.build.outputs.API_VERSION}}
         run: unzip jbr-api-${API_VERSION}-javadoc.jar -d javadoc
       - name: Configure Pages
         uses: actions/configure-pages@v3.0.6
