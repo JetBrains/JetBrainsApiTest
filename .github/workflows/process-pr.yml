@@ -12,11 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.5.2
       - name: Setup Java JDK
-#         uses: actions/setup-java@v3.9.0
-#         with:
-#           distribution: oracle
-#           java-version: 20
-        uses: oracle-actions/setup-java@b9d8cf728e941b3ce91823c84cb792e7602e4687
+        uses: actions/setup-java@v4.0.0
+        with:
+          distribution: oracle
+          java-version: 21
       - name: Process
         run: |
           mkdir -p artifact
