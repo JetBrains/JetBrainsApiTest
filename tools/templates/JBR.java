@@ -122,7 +122,7 @@ public final class JBR {
      * Generated client-side metadata, needed by JBR when linking the implementation.
      */
     private static final class Metadata {
-        private static final String[] KNOWN_SERVICES = {/*KNOWN_SERVICES*/};
+        private static final String[] KNOWN_SERVICES = {"com.jetbrains.JBR$ServiceApi", /*KNOWN_SERVICES*/};
         private static final String[] KNOWN_PROXIES = {/*KNOWN_PROXIES*/};
     }
 

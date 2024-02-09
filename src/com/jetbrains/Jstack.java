@@ -23,17 +23,28 @@
 
 package com.jetbrains;
 
+import java.util.function.Supplier;
+
 /**
- * Javadoc.
+ * Jstack-related utilities.
  */
 @Service
-public interface Test {
-
+public interface Jstack {
     /**
-     * Javadoc.
-     * @return fafafa
+     * Specifies a supplier of additional information to be included into
+     * the output of {@code jstack}. The String supplied will be included
+     * as-is with no header surrounded only with line breaks.
+     *
+     * {@code infoSupplier} will be invoked on an unspecified thread that
+     * must not be left blocked for a long time.
+     *
+     * Only one supplier is allowed, so subsequent calls to
+     * {@code includeInfoFrom} will overwrite the previously specified supplier.
+     *
+     * @param infoSupplier a supplier of {@code String} values to be
+     *                     included into jstack's output. If {@code null},
+     *                     then the previously registered supplier is removed
+     *                     (if any) and no extra info will be included.
      */
-    Object clone();
-
-//    void hello();
+    void includeInfoFrom(Supplier<String> infoSupplier);
 }
