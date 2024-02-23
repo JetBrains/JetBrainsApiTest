@@ -54,10 +54,8 @@ public final class JBR {
         }
         api = a;
         bootstrapException = exception;
-        IMPL_VERSION = api == null ? "UNKNOWN" : api.getImplVersion();
     }
 
-    private static final String IMPL_VERSION;
     private static final String API_VERSION = getApiVersionFromModule();
     private static String getApiVersionFromModule() {
         java.lang.module.ModuleDescriptor descriptor = JBR.class.getModule().getDescriptor();
@@ -105,16 +103,6 @@ public final class JBR {
     }
 
     /**
-     * Returns JBR API version supported by current runtime or "UNKNOWN".
-     * <h4>Note:</h4>
-     * This method can return "UNKNOWN" even when JBR API {@link #isAvailable()}.
-     * @return JBR API version supported by current implementation or "UNKNOWN".
-     */
-    public static String getImplVersion() {
-        return IMPL_VERSION;
-    }
-
-    /**
      * Checks whether given {@linkplain com.jetbrains.Extensions extension} is supported.
      * @param extension extension to check
      * @return true is extension is supported
@@ -136,8 +124,6 @@ public final class JBR {
         }
 
         default boolean isExtensionSupported(Enum<?> extension) { return false; }
-
-        default String getImplVersion() { return "UNKNOWN"; }
     }
 
     @FunctionalInterface

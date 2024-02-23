@@ -39,7 +39,6 @@ public class JBRApiTest {
     public static void main(String[] args) throws Exception {
         if (!JBR.getApiVersion().equals("SNAPSHOT") &&
             !JBR.getApiVersion().matches("\\d+\\.\\d+\\.\\d+")) throw new Error("Invalid API version: " + JBR.getApiVersion());
-        if (!JBR.getImplVersion().matches("\\d+\\.\\d+\\.\\d+")) throw new Error("Invalid implementation version: " + JBR.getApiVersion());
         if (!JBR.isAvailable()) throw new Error("JBR API is not available");
         checkMetadata();
         testServices();
