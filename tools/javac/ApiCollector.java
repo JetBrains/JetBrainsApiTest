@@ -157,6 +157,12 @@ public class ApiCollector {
             method.thrownTypes = collectTypesToSet(e.getThrownTypes());
             method.typeParameters = getTypeParameters(e);
             method.deprecation = getDeprecationStatus(e);
+            method.extension = round.getExtensionName(e);
+            if (method.extension != null && (!parent.usage.inheritableByBackend ||
+                    method.modifiers.contains(STATIC) || method.modifiers.contains(FINAL))) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "Only methods intended to be inherited by the backend can be marked with @Extension", e);
+            }
             parent.methods.put(method, method);
             return null;
         }

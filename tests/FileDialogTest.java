@@ -42,15 +42,24 @@ public class FileDialogTest {
     }
 
     public static void main(String[] args) throws Exception {
+        try {
+            test();
+        } finally {
+            refresh();
+            directory.delete();
+        }
+    }
+
+    private static void test() throws Exception {
         directory.mkdirs();
         refresh();
         var dialog = new FileDialog((Frame) null);
         dialog.setTitle("Press Save");
         dialog.setDirectory(directory.getAbsolutePath());
-        dialog.setFile("PASS");
+        dialog.setFile("Press Save");
         dialog.setMode(FileDialog.SAVE);
         dialog.setVisible(true);
-        var file = new File(directory, "PASS");
+        var file = new File(directory, "Press Save");
         check(dialog, file);
 
         refresh();

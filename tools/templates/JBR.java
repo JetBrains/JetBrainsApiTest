@@ -2,6 +2,11 @@ package com.jetbrains;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Function;
 
 /**
  * Entry point into JBR API.
@@ -28,9 +33,18 @@ public final class JBR {
         ServiceApi a = null;
         Exception exception = null;
         try {
-            a = (ServiceApi) Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap")
-                    .getMethod("bootstrap", MethodHandles.Lookup.class)
-                    .invoke(null, MethodHandles.lookup());
+            try { // New version of bootstrap method
+                a = (ServiceApi) Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap")
+                        .getMethod("bootstrap", Class.class, MethodHandles.Lookup.class, String[].class, String[].class,
+                                                Class.class, Class.class, Class.class, Map.class, Function.class)
+                        .invoke(null, ServiceApi.class, MethodHandles.lookup(), Metadata.KNOWN_SERVICES, Metadata.KNOWN_PROXIES,
+                                Service.class, Proxy.class, Client.class, Metadata.KNOWN_EXTENSIONS, Metadata.EXTENSION_EXTRACTOR);
+            } catch (NoSuchMethodException ignore) {
+                // Old version of bootstrap method
+                a = (ServiceApi) Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap")
+                        .getMethod("bootstrap", MethodHandles.Lookup.class)
+                        .invoke(null, MethodHandles.lookup());
+            }
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
             if (t instanceof Error) throw (Error) t;
@@ -56,8 +70,8 @@ public final class JBR {
 
     private JBR() {}
 
-    private static <T> T getService(Class<T> interFace, FallbackSupplier<T> fallback) {
-        T service = getService(interFace);
+    private static <T> T getServiceWithFallback(Class<T> interFace, FallbackSupplier<T> fallback, Extensions... extensions) {
+        T service = getService(interFace, extensions);
         try {
             return service != null ? service : fallback != null ? fallback.get() : null;
         } catch (Throwable ignore) {
@@ -65,8 +79,8 @@ public final class JBR {
         }
     }
 
-    static <T> T getService(Class<T> interFace) {
-        return api == null ? null : api.getService(interFace);
+    static <T> T getService(Class<T> interFace, Extensions... extensions) {
+        return api == null ? null : api.getService(interFace, extensions);
     }
 
     /**
@@ -101,12 +115,27 @@ public final class JBR {
     }
 
     /**
+     * Checks whether given {@linkplain com.jetbrains.Extensions extension} is supported.
+     * @param extension extension to check
+     * @return true is extension is supported
+     */
+    public static boolean isExtensionSupported(Extensions extension) {
+        return api != null && api.isExtensionSupported(extension);
+    }
+
+    /**
      * Internal API interface, contains most basic methods for communication between client and JBR.
      */
     @Service
     private interface ServiceApi {
 
         <T> T getService(Class<T> interFace);
+
+        default <T> T getService(Class<T> interFace, Enum<?>... extensions) {
+            return extensions.length == 0 ? getService(interFace) : null;
+        }
+
+        default boolean isExtensionSupported(Enum<?> extension) { return false; }
 
         default String getImplVersion() { return "UNKNOWN"; }
     }
@@ -121,9 +150,21 @@ public final class JBR {
     /**
      * Generated client-side metadata, needed by JBR when linking the implementation.
      */
+    @SuppressWarnings({"rawtypes", "deprecation"})
     private static final class Metadata {
+        // In older versions KNOWN_SERVICES and KNOWN_PROXIES were retrieved via reflection, keep for compatibility
         private static final String[] KNOWN_SERVICES = {"com.jetbrains.JBR$ServiceApi", /*KNOWN_SERVICES*/};
         private static final String[] KNOWN_PROXIES = {/*KNOWN_PROXIES*/};
+
+        private static final Function<Method, Extensions> EXTENSION_EXTRACTOR = m -> {
+            Extension e = m.getAnnotation(Extension.class);
+            return e == null ? null : e.value();
+        };
+        private static final Map<Extensions, Class[]> KNOWN_EXTENSIONS = new EnumMap<>(Extensions.class);
+        static {
+            /*KNOWN_EXTENSIONS*/
+            for (Extensions e : Extensions.values()) KNOWN_EXTENSIONS.putIfAbsent(e, new Class[0]);
+        }
     }
 
     // ======================= Generated static methods =======================

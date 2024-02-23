@@ -36,9 +36,21 @@ public class ApiProcessor extends AbstractProcessor {
         Round round = new Round(roundEnvironment);
         for (TypeElement e : set) {
             switch (e.getQualifiedName().toString()) {
-                case "com.jetbrains.Service" -> round.annotations.service = e;
-                case "com.jetbrains.Proxy"   -> round.annotations.proxy   = e;
-                case "com.jetbrains.Client"  -> round.annotations.client  = e;
+                case "com.jetbrains.Service"   -> round.annotations.service   = e;
+                case "com.jetbrains.Proxy"     -> round.annotations.proxy     = e;
+                case "com.jetbrains.Client"    -> round.annotations.client    = e;
+                case "com.jetbrains.Extension" -> {
+                    round.annotations.extension = e;
+                    for (Element t : e.getEnclosedElements()) {
+                        if (t instanceof ExecutableElement executable) {
+                            if (t.getSimpleName().toString().equals("value")) {
+                                round.annotations.extensionValue = executable;
+                                break;
+                            }
+                        }
+                    }
+                    if (round.annotations.extensionValue == null) throw new Error("@Extension.value() method not found");
+                }
             }
         }
 
@@ -67,21 +79,19 @@ public class ApiProcessor extends AbstractProcessor {
                 }
                 // Compare API changes.
                 ApiComparator.Node result = ApiComparator.compare(oldApi, newApi);
-                StringBuilder out = new StringBuilder();
-                ApiComparator.Compatibility compatibility = result.traverse(out);
-                newApi.version = compatibility.incrementVersion(oldApi.version);
-                if (compatibility == ApiComparator.Compatibility.SAME) {
+                ApiComparator.Digest digest = result.digest();
+                newApi.version = digest.compatibility().incrementVersion(oldApi.version);
+                if (digest.compatibility() == ApiComparator.Compatibility.SAME) {
                     // Do not print anything if there were no changes.
                     message = null;
                 } else {
                     // Put changes into code block.
-                    if (out.length() > 0) out.insert(0, "```\n").append("```\n");
-                    // Print details.
-                    if (compatibility == ApiComparator.Compatibility.MAJOR) {
-                        out.append("\u2757 There are major changes which require extra attention, they are marked with \"\u2757\".\n");
-                    }
-                    out.append("Compatibility status of API changes: ").append(compatibility).append(' ');
-                    out.append(switch (compatibility) {
+                    StringBuilder out = new StringBuilder();
+                    if (!digest.diff().isEmpty()) out.append("```\n").append(digest.diff()).append("```\n");
+                    // Print messages.
+                    for (ApiComparator.Message msg : digest.messages()) out.append(msg.text).append('\n');
+                    out.append("Compatibility status of API changes: ").append(digest.compatibility()).append(' ');
+                    out.append(switch (digest.compatibility()) {
                         case MAJOR -> "\uD83E\uDD2F";
                         case MINOR -> "\uD83D\uDD27";
                         case PATCH -> "\uD83D\uDC85";
@@ -93,11 +103,15 @@ public class ApiProcessor extends AbstractProcessor {
             }
             if (message != null) {
                 // Get rid of unicode symbols when printing to stdout.
-                System.out.println(message
-                        .replaceAll("\u2757", "!!!")
+                String simple = message;
+                for (ApiComparator.Message msg : ApiComparator.Message.values()) {
+                    if (msg.mark != null && msg.simpleMark != null) simple = simple.replaceAll(msg.mark, msg.simpleMark);
+                }
+                simple = simple
                         .replaceAll("[^\\x00-\\x7F]", "")
                         .replaceAll("```\n", "")
-                        .stripTrailing());
+                        .stripTrailing();
+                System.out.println(simple);
             }
 
             // Save metadata.

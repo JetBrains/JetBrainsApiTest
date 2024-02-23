@@ -106,6 +106,7 @@ public class Api implements Serializable {
         public HashSet<String> thrownTypes;
         public TypeParameter[] typeParameters;
         public Deprecation deprecation;
+        public String extension;
 
         public Method(Type parent, String name, String[] parameterTypes) {
             this.parent = parent;
@@ -143,7 +144,7 @@ public class Api implements Serializable {
     }
 
     enum Usage {
-        DEFAULT(true, false), // No annotations. Non-annotated API types must either be final, or be inherited by some other type.
+        DEFAULT(false, false), // No annotations. Non-annotated API types must either be final, or be inherited by some other type.
         SERVICE(true, false), // @Service
         PROXY(true, false), // @Proxy
         CLIENT(false, true), // @Client

@@ -1,6 +1,6 @@
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -22,7 +22,19 @@ public class Round {
         return a == null ? Set.of() : env.getElementsAnnotatedWith(a);
     }
 
+    public String getExtensionName(Element element) {
+        if (annotations.extension == null) return null;
+        for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
+            if (annotation.getAnnotationType().asElement().equals(annotations.extension)) {
+                AnnotationValue value = annotation.getElementValues().get(annotations.extensionValue);
+                return value.getValue().toString();
+            }
+        }
+        return null;
+    }
+
     public static class Annotations {
-        public TypeElement service, proxy, client;
+        public TypeElement service, proxy, client, extension;
+        public ExecutableElement extensionValue;
     }
 }

@@ -2,6 +2,7 @@ import javax.lang.model.element.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static javax.lang.model.element.Modifier.*;
 
@@ -12,9 +13,25 @@ import static javax.lang.model.element.Modifier.*;
 @SuppressWarnings("UnnecessaryUnicodeEscape")
 public class ApiComparator {
 
+    public enum Message {
+        BREAKING_CHANGES("\u2757 There are breaking changes which require extra attention.", "\u2757", "!!!"),
+        NON_EXTENSION_METHOD_ADDED("\u2755 Non-extension methods added to existing types. " +
+                "It is generally advised to add methods to existing types as @Extension methods.", "\u2755", "!!");
+
+        Message(String text, String mark, String simpleMark) {
+            this.text = text;
+            this.mark = mark;
+            this.simpleMark = simpleMark;
+        }
+        public final String text, mark, simpleMark;
+    }
+
+    public record Digest(Compatibility compatibility, String diff, Set<Message> messages) {}
+
     public static class Node {
 
         public final String name;
+        public final Set<Message> messages = EnumSet.noneOf(Message.class);
         public Diff diff;
         public Compatibility compatibility = Compatibility.SAME;
         public String note;
@@ -38,31 +55,39 @@ public class ApiComparator {
         }
 
         /**
-         * @param out output for textual description of API changes.
-         * @return total compatibility of API changes.
+         * @return digest information with total compatibility of API changes.
          */
-        public Compatibility traverse(StringBuilder out) {
+        public Digest digest() {
+            StringBuilder diff = new StringBuilder();
+            Set<Message> messages = EnumSet.noneOf(Message.class);
+            Compatibility compatibility = traverse(diff, messages);
+            return new Digest(compatibility, diff.toString(), messages);
+        }
+
+        public Compatibility traverse(StringBuilder out, Set<Message> messages) {
             if (name == null) {
                 if (child == null) return compatibility;
-                return Compatibility.max(compatibility, child.traverse(out, new StringBuilder()));
+                return Compatibility.max(compatibility, child.traverse(out, new StringBuilder(), messages));
             } else {
-                return traverse(out, new StringBuilder());
+                return traverse(out, new StringBuilder(), messages);
             }
         }
 
-        private Compatibility traverse(StringBuilder out, StringBuilder indent) {
+        private Compatibility traverse(StringBuilder out, StringBuilder indent, Set<Message> messages) {
+            messages.addAll(this.messages);
             int indentDepth = indent.length();
             Compatibility nextComp = Compatibility.SAME, comp = compatibility;
-            if (next != null) nextComp = next.traverse(out, indent);
+            if (next != null) nextComp = next.traverse(out, indent, messages);
             if (child != null) {
                 indent.append("  ");
-                comp = Compatibility.max(comp, child.traverse(out, indent));
+                comp = Compatibility.max(comp, child.traverse(out, indent, messages));
                 indent.setLength(indentDepth);
             }
-            if (comp != Compatibility.SAME) {
+            String marks = this.messages.stream().map(m -> m.mark != null ? " " + m.mark : "").collect(Collectors.joining());
+            if (comp != Compatibility.SAME || note != null || !marks.isEmpty()) {
                 indent.append(diff.ch).append(' ').append(name);
                 if (note != null) indent.append(" - ").append(note);
-                if (compatibility == Compatibility.MAJOR) indent.append(" \u2757");
+                indent.append(marks);
                 out.insert(0, indent.append('\n'));
                 indent.setLength(indentDepth);
             }
@@ -108,6 +133,7 @@ public class ApiComparator {
         if (a == null || b == null) {
             node = new Node(null, Diff.MODIFIED);
             node.compatibility = Compatibility.MAJOR;
+            node.messages.add(Message.BREAKING_CHANGES);
         } else {
             node = new Node(null, Diff.NONE);
             node.child = compare(a.types, b.types, ApiComparator::compare, node.child);
@@ -122,6 +148,7 @@ public class ApiComparator {
             node.compatibility = Compatibility.MINOR;
         } else if (node.diff == Diff.REMOVED) {
             node.compatibility = Compatibility.MAJOR;
+            node.messages.add(Message.BREAKING_CHANGES);
         } else {
             node.child = compare(a.types, b.types, ApiComparator::compare, node.child);
             node.child = compare(a.methods, b.methods, ApiComparator::compare, node.child);
@@ -135,6 +162,7 @@ public class ApiComparator {
             node.check(a.usage.inheritableByClient && !b.usage.inheritableByClient, "prohibited inheritance by client");
             if (node.diff != Diff.NONE) {
                 node.compatibility = Compatibility.MAJOR;
+                node.messages.add(Message.BREAKING_CHANGES);
                 return node;
             }
 
@@ -159,6 +187,7 @@ public class ApiComparator {
             node.compatibility = Compatibility.MINOR;
         } else if (node.diff == Diff.REMOVED) {
             node.compatibility = Compatibility.MAJOR;
+            node.messages.add(Message.BREAKING_CHANGES);
         } else {
 
             // Breaking changes
@@ -166,6 +195,7 @@ public class ApiComparator {
             node.check(!Objects.equals(a.constantValue, b.constantValue), "changed value");
             if (node.diff != Diff.NONE) {
                 node.compatibility = Compatibility.MAJOR;
+                node.messages.add(Message.BREAKING_CHANGES);
                 return node;
             }
 
@@ -186,13 +216,19 @@ public class ApiComparator {
         if (node.diff == Diff.ADDED) {
             if (b.parent.usage.inheritableByClient && b.modifiers.contains(ABSTRACT)) {
                 node.compatibility = Compatibility.MAJOR;
+                node.messages.add(Message.BREAKING_CHANGES);
             } else {
                 // Adding a non-abstract method to a type inheritable by a client still may
                 // break compatibility in some cases, but we consider this risk low enough.
                 node.compatibility = Compatibility.MINOR;
+                if (b.extension == null && b.parent.usage.inheritableByBackend && b.modifiers.contains(ABSTRACT) &&
+                        !b.modifiers.contains(STATIC) && !b.modifiers.contains(FINAL)) {
+                    node.messages.add(Message.NON_EXTENSION_METHOD_ADDED);
+                }
             }
         } else if (node.diff == Diff.REMOVED) {
             node.compatibility = Compatibility.MAJOR;
+            node.messages.add(Message.BREAKING_CHANGES);
         } else {
 
             // Breaking changes
@@ -201,6 +237,7 @@ public class ApiComparator {
             node.check(!Arrays.equals(a.typeParameters, b.typeParameters), "changed type parameters");
             if (node.diff != Diff.NONE) {
                 node.compatibility = Compatibility.MAJOR;
+                node.messages.add(Message.BREAKING_CHANGES);
                 return node;
             }
 
@@ -208,6 +245,7 @@ public class ApiComparator {
 
             // Compatible changes
             node.check(a.deprecation != b.deprecation, "changed deprecation state");
+            node.check(!Objects.equals(a.extension, b.extension), "changed extension");
             if (node.diff != Diff.NONE) {
                 node.compatibility = Compatibility.MINOR;
                 return node;
@@ -227,6 +265,7 @@ public class ApiComparator {
         node.check(a.contains(STATIC) != b.contains(STATIC), "changed static");
         if (node.diff != Diff.NONE) {
             node.compatibility = Compatibility.MAJOR;
+            node.messages.add(Message.BREAKING_CHANGES);
             return true;
         }
 

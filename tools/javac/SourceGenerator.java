@@ -1,6 +1,9 @@
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -8,8 +11,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +37,7 @@ public class SourceGenerator {
         Set<? extends Element>
                 serviceElements = round.getElementsAnnotatedWith(round.annotations.service),
                 proxyElements = round.getElementsAnnotatedWith(round.annotations.proxy);
+        Map<String, Set<TypeElement>> extensions = findExtensions(round);
 
         // Generate JBR class source code.
         List<String> serviceGetters = serviceElements.stream()
@@ -42,7 +45,13 @@ public class SourceGenerator {
                         e.getEnclosingElement().getKind() == ElementKind.PACKAGE &&
                         e.getModifiers().contains(Modifier.PUBLIC))
                 .map(this::generateServiceGetter).toList();
-        String result = replaceTemplate(jbrTemplate, "/*GENERATED_METHODS*/", serviceGetters)
+        List<String> knownExtensions = extensions.entrySet().stream()
+                .map(e -> "KNOWN_EXTENSIONS.put(Extensions." + e.getKey() + ", new Class[] {" +
+                        e.getValue().stream().map(c -> c.getQualifiedName() + ".class")
+                                .collect(Collectors.joining(", ")) + "});").toList();
+        String result = replaceTemplate(
+                replaceTemplate(jbrTemplate, "/*GENERATED_METHODS*/", serviceGetters, true),
+                "/*KNOWN_EXTENSIONS*/", knownExtensions, false)
                 .replace("/*KNOWN_PROXIES*/", joinClassNamesToList(proxyElements))
                 .replace("/*KNOWN_SERVICES*/", joinClassNamesToList(serviceElements));
 
@@ -83,7 +92,7 @@ public class SourceGenerator {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static String replaceTemplate(String src, String placeholder, Iterable<String> statements) {
+    private static String replaceTemplate(String src, String placeholder, Iterable<String> statements, boolean space) {
         int placeholderIndex = src.indexOf(placeholder);
         int indent = 0;
         while (placeholderIndex - indent >= 1 && src.charAt(placeholderIndex - indent - 1) == ' ') indent++;
@@ -93,12 +102,25 @@ public class SourceGenerator {
         StringBuilder sb = new StringBuilder(before);
         boolean firstStatement = true;
         for (String s : statements) {
-            if (!firstStatement) sb.append('\n');
+            if (!firstStatement && space) sb.append('\n');
             sb.append(s.indent(indent));
             firstStatement = false;
         }
         sb.append(after);
         return sb.toString();
+    }
+
+    private static Map<String, Set<TypeElement>> findExtensions(Round round) {
+        if (round.annotations.extension == null) return Map.of();
+        Set<? extends Element> extensionElements = round.getElementsAnnotatedWith(round.annotations.extension);
+        Map<String, Set<TypeElement>> map = new HashMap<>();
+        for (Element method : extensionElements) {
+            String extension = round.getExtensionName(method);
+            if (extension != null) {
+                map.computeIfAbsent(extension, s -> new HashSet<>()).add((TypeElement) method.getEnclosingElement());
+            }
+        }
+        return map;
     }
 
 }

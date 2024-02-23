@@ -62,7 +62,10 @@ echo "CompatibilityPlugin" > "$TOOLS_OUT/META-INF/services/com.sun.source.util.P
 
 # Generic compiler options.
 SMALLJAVA_FLAGS="-J-XX:+UseSerialGC -J-Xms32M -J-Xmx512M -J-XX:TieredStopAtLevel=1"
-JAVAC="$JAVAC $SMALLJAVA_FLAGS -g -Werror -Xlint:all -implicit:none -Xprefer:source -XDignore.symbol.file=true -encoding ascii"
+JAVAC="$JAVAC $SMALLJAVA_FLAGS -g -Xlint:all -implicit:none -Xprefer:source -XDignore.symbol.file=true -encoding ascii"
+if [ "$MODE" != "dev" ] ; then
+  JAVAC="$JAVAC -Werror"
+fi
 
 # Compile tools.
 $JAVAC -d $TOOLS_OUT \
