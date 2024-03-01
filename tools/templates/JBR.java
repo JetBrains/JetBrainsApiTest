@@ -1,11 +1,9 @@
 package com.jetbrains;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodType;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.function.Function;
 
 /**
@@ -33,24 +31,27 @@ public final class JBR {
         ServiceApi a = null;
         Exception exception = null;
         try {
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
             try { // New version of bootstrap method
-                a = (ServiceApi) Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap")
-                        .getMethod("bootstrap", Class.class, MethodHandles.Lookup.class, String[].class, String[].class,
-                                                Class.class, Class.class, Class.class, Map.class, Function.class)
-                        .invoke(null, ServiceApi.class, MethodHandles.lookup(), Metadata.KNOWN_SERVICES, Metadata.KNOWN_PROXIES,
-                                Service.class, Proxy.class, Client.class, Metadata.KNOWN_EXTENSIONS, Metadata.EXTENSION_EXTRACTOR);
-            } catch (NoSuchMethodException ignore) {
+                Class<?> bootstrap = Class.forName("com.jetbrains.exported.JBRApi");
+                a = (ServiceApi) (Object) lookup
+                        .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, Class.class,
+                                MethodHandles.Lookup.class, Class.class, Class.class, Class.class, Map.class, Function.class))
+                        .invokeExact(ServiceApi.class, lookup, Service.class, Proxy.class, Client.class,
+                                Metadata.KNOWN_EXTENSIONS, Metadata.EXTENSION_EXTRACTOR);
+            } catch (IllegalAccessException | NoSuchMethodException | ClassNotFoundException ignore) {
                 // Old version of bootstrap method
-                a = (ServiceApi) Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap")
-                        .getMethod("bootstrap", MethodHandles.Lookup.class)
-                        .invoke(null, MethodHandles.lookup());
+                Class<?> bootstrap = Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap");
+                a = (ServiceApi) (Object) lookup
+                        .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, MethodHandles.Lookup.class))
+                        .invokeExact(lookup);
             }
-        } catch (InvocationTargetException e) {
+        }  catch (IllegalAccessException | NoSuchMethodException | ClassNotFoundException e) {
+            exception = e;
+        } catch (Throwable e) {
             Throwable t = e.getCause();
             if (t instanceof Error) throw (Error) t;
             else throw new Error(t);
-        } catch (IllegalAccessException | NoSuchMethodException | ClassNotFoundException e) {
-            exception = e;
         }
         api = a;
         bootstrapException = exception;
@@ -138,11 +139,11 @@ public final class JBR {
      */
     @SuppressWarnings({"rawtypes", "deprecation"})
     private static final class Metadata {
-        // In older versions KNOWN_SERVICES and KNOWN_PROXIES were retrieved via reflection, keep for compatibility
+        // Needed only for compatibility.
         private static final String[] KNOWN_SERVICES = {"com.jetbrains.JBR$ServiceApi", /*KNOWN_SERVICES*/};
         private static final String[] KNOWN_PROXIES = {/*KNOWN_PROXIES*/};
 
-        private static final Function<Method, Extensions> EXTENSION_EXTRACTOR = m -> {
+        private static final Function<java.lang.reflect.Method, Extensions> EXTENSION_EXTRACTOR = m -> {
             Extension e = m.getAnnotation(Extension.class);
             return e == null ? null : e.value();
         };
