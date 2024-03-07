@@ -26,27 +26,27 @@ import java.util.function.Function;
 public final class JBR {
 
     private static final ServiceApi api;
-    private static final Exception bootstrapException;
+    private static final Throwable bootstrapException;
     static {
         ServiceApi a = null;
-        Exception exception = null;
+        Throwable exception = null;
         try {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             try { // New version of bootstrap method
                 Class<?> bootstrap = Class.forName("com.jetbrains.exported.JBRApi");
                 a = (ServiceApi) (Object) lookup
                         .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, Class.class,
-                                MethodHandles.Lookup.class, Class.class, Class.class, Class.class, Map.class, Function.class))
-                        .invokeExact(ServiceApi.class, lookup, Service.class, Proxy.class, Client.class,
+                                Class.class, Class.class, Class.class, Map.class, Function.class))
+                        .invokeExact(ServiceApi.class, Service.class, Proxy.class, Client.class,
                                 Metadata.KNOWN_EXTENSIONS, Metadata.EXTENSION_EXTRACTOR);
-            } catch (IllegalAccessException | NoSuchMethodException | ClassNotFoundException ignore) {
+            } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | NoSuchMethodError ignore) {
                 // Old version of bootstrap method
                 Class<?> bootstrap = Class.forName("com.jetbrains.bootstrap.JBRApiBootstrap");
                 a = (ServiceApi) (Object) lookup
                         .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, MethodHandles.Lookup.class))
                         .invokeExact(lookup);
             }
-        }  catch (IllegalAccessException | NoSuchMethodException | ClassNotFoundException e) {
+        }  catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | NoSuchMethodError e) {
             exception = e;
         } catch (Throwable e) {
             Throwable t = e.getCause();

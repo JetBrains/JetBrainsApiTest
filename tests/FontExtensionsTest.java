@@ -24,12 +24,14 @@
 /*
   @test
   @summary checking visualisation of drawing text with custom OpenType's features
-  @modules java.desktop/com.jetbrains.desktop:+open
+  @modules java.desktop/sun.font:open
   @run main FontExtensionsTest
 */
 
 import com.jetbrains.FontExtensions;
 import com.jetbrains.JBR;
+
+import sun.font.FontAccess;
 
 import java.awt.*;
 import java.awt.font.TextAttribute;
@@ -39,9 +41,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-
-import static com.jetbrains.desktop.FontExtensions.featuresToString;
-import static com.jetbrains.desktop.FontExtensions.getFeatures;
+import java.util.stream.Collectors;
 
 public class FontExtensionsTest {
     @Retention(RetentionPolicy.RUNTIME)
@@ -95,7 +95,9 @@ public class FontExtensionsTest {
     }
 
     private static String fontFeaturesAsString(Font font) {
-        return featuresToString(getFeatures(font));
+        return FontAccess.getFontAccess().getFeatures(font).entrySet().stream()
+                .map(feature -> (feature.getKey() + "=" + feature.getValue()))
+                .collect(Collectors.joining(";"));
     }
 
     @JBRTest
@@ -229,7 +231,7 @@ public class FontExtensionsTest {
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException("JBR: internal error during testing");
+            throw new RuntimeException("JBR: internal error during testing", e);
         }
 
         if (!error.isEmpty()) {

@@ -48,9 +48,9 @@ public class ApiCollector {
             if (e.getKind() != ElementKind.INTERFACE && e.getKind() != ElementKind.CLASS) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
                         "Non-class/interface marked with JBR API annotation", e);
-            } else if (e.getModifiers().contains(FINAL)) {
+            } else if (e.getModifiers().contains(FINAL) || e.getModifiers().contains(SEALED)) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                        "Final class marked with JBR API annotation", e);
+                        "Final/sealed class marked with JBR API annotation", e);
             }
         }
 
