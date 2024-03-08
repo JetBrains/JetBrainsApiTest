@@ -71,7 +71,7 @@ public interface WindowDecorations {
      * which is done by treating title bar as part of client area, but with some
      * special behavior like dragging or maximizing on double click.
      * Custom title bar has {@linkplain CustomTitleBar#getHeight()  height} and controls.
-     * @implNote Behavior is platform-dependent, only macOS and Windows are supported.
+     * Behavior is platform-dependent, only macOS and Windows are supported.
      * @see #setCustomTitleBar(Frame, CustomTitleBar)
      */
     @Proxy

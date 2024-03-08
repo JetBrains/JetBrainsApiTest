@@ -48,6 +48,7 @@ public interface AccessibleAnnouncer {
      * @param a        an accessible to which the announcing relates
      * @param str      string for announcing
      * @param priority priority for announcing
+     * @throws Exception if an exception occurred
      */
     void announce(Accessible a, final String str, final int priority) throws Exception;
 }
