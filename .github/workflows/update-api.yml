@@ -32,7 +32,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      CHANGES: ${{steps.build.outputs.CHANGES}}
+      RELEASE: ${{steps.build.outputs.RELEASE}}
+      JAVADOC: ${{steps.build.outputs.JAVADOC}}
       API_VERSION: ${{steps.build.outputs.API_VERSION}}
       API_DIFF: ${{steps.build.outputs.API_DIFF}}
     steps:
@@ -67,9 +68,15 @@ jobs:
           echo "API_DIFF<<API_DIFF_EOF" >> $GITHUB_OUTPUT
           echo "${API_DIFF}API_DIFF_EOF" >> $GITHUB_OUTPUT
           echo "API_VERSION=$API_VERSION" >> "$GITHUB_OUTPUT"
-          echo "CHANGES=true" >> "$GITHUB_OUTPUT"
+          INPUT_PUSH=${{inputs.push}}
+          INPUT_RELEASE=${{inputs.release}}
+          INPUT_JAVADOC=${{inputs.javadoc}}
+          echo "ARTIFACTS=true" >> "$GITHUB_OUTPUT"
+          echo "PUSH=${INPUT_PUSH:-"true"}" >> "$GITHUB_OUTPUT"
+          echo "RELEASE=${INPUT_RELEASE:-"true"}" >> "$GITHUB_OUTPUT"
+          echo "JAVADOC=${INPUT_JAVADOC:-"true"}" >> "$GITHUB_OUTPUT"
       - name: Upload artifact jars
-        if: ${{steps.build.outputs.CHANGES}}
+        if: ${{steps.build.outputs.ARTIFACTS}}
         uses: actions/upload-artifact@v3.1.2
         with:
           name: jars
@@ -78,7 +85,7 @@ jobs:
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-sources.jar
             out/jbr-api-${{steps.build.outputs.API_VERSION}}-javadoc.jar
       - name: Push update
-        if: ${{steps.build.outputs.CHANGES && inputs.push}}
+        if: ${{steps.build.outputs.PUSH}}
         env:
           API_VERSION: ${{steps.build.outputs.API_VERSION}}
           API_DIFF: ${{steps.build.outputs.API_DIFF}}
@@ -94,7 +101,7 @@ jobs:
     permissions:
       contents: write
     needs: build
-    if: ${{needs.build.outputs.CHANGES && inputs.release}}
+    if: ${{needs.build.outputs.RELEASE}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
@@ -155,7 +162,7 @@ jobs:
       pages: write
       id-token: write
     needs: build
-    if: ${{needs.build.outputs.CHANGES && inputs.javadoc}}
+    if: ${{needs.build.outputs.JAVADOC}}
     steps:
       - name: Download artifact jars
         uses: actions/download-artifact@v3.0.2
