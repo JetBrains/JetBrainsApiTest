@@ -33,7 +33,7 @@ public final class JBR {
         try {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             try { // New version of bootstrap method
-                Class<?> bootstrap = Class.forName("com.jetbrains.exported.JBRApi");
+                Class<?> bootstrap = Class.forName("com.jetbrains.exported.JBRApiSupport");
                 a = (ServiceApi) (Object) lookup
                         .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, Class.class,
                                 Class.class, Class.class, Class.class, Map.class, Function.class))
