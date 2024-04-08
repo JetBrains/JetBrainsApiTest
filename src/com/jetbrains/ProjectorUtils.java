@@ -30,6 +30,7 @@ import java.util.function.Supplier;
  * {@link java.awt.GraphicsEnvironment}-related utilities.
  */
 @Service
+@Provided
 public interface ProjectorUtils {
 
     /**

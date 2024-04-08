@@ -33,6 +33,7 @@ import java.util.Map;
  * @see WindowDecorations.CustomTitleBar
  */
 @Service
+@Provided
 public interface WindowDecorations {
 
     /**
@@ -70,11 +71,11 @@ public interface WindowDecorations {
      * Custom title bar allows merging of window content with native title bar,
      * which is done by treating title bar as part of client area, but with some
      * special behavior like dragging or maximizing on double click.
-     * Custom title bar has {@linkplain CustomTitleBar#getHeight()  height} and controls.
+     * Custom title bar has {@linkplain CustomTitleBar#getHeight() height} and controls.
      * Behavior is platform-dependent, only macOS and Windows are supported.
      * @see #setCustomTitleBar(Frame, CustomTitleBar)
      */
-    @Proxy
+    @Provided
     interface CustomTitleBar {
 
         /**

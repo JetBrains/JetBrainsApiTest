@@ -31,6 +31,7 @@ import java.awt.Window;
  * X11 WM-assisted window moving facility.
  */
 @Service
+@Provided
 public interface WindowMove {
     /**
      * Starts moving the top-level parent window of the given window together with the mouse pointer.

@@ -8,7 +8,7 @@ import static javax.lang.model.element.Modifier.*;
 
 /**
  * Compares API computing compatibility status and textual description of API changes.
- * <a href="https://wiki.eclipse.org/Evolving_Java-based_APIs_2">Useful link.</a>
+ * <a href="https://github.com/eclipse-platform/eclipse.platform/blob/master/docs/Evolving-Java-based-APIs-2.md">Useful link.</a>
  */
 @SuppressWarnings("UnnecessaryUnicodeEscape")
 public class ApiComparator {

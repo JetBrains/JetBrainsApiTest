@@ -1,6 +1,5 @@
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,7 +33,7 @@ public class Round {
     }
 
     public static class Annotations {
-        public TypeElement service, proxy, client, extension;
+        public TypeElement service, provided, provides, extension;
         public ExecutableElement extensionValue;
     }
 }

@@ -35,6 +35,7 @@ import java.util.TreeMap;
  * Font-related utilities.
  */
 @Service
+@Provided
 public interface FontExtensions {
     /**
      * Magic constant representing enabled feature.
@@ -322,6 +323,7 @@ public interface FontExtensions {
     /**
      * Map of feature tags with corresponding {@linkplain #FEATURE_ON hints}.
      */
+    @Provides
     final class Features extends TreeMap<FeatureTag, Integer> {
         private static final long serialVersionUID = 1L;
 
@@ -351,7 +353,7 @@ public interface FontExtensions {
 
     /**
      * This method derives a new {@link java.awt.Font} object with certain set of {@link FeatureTag}
-     * and correspoinding values.
+     * and corresponding values.
      *
      * @param font       basic font
      * @param features   set of OpenType's features wrapped inside {@link Features}

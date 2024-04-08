@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
  * values.
  */
 @Service
+@Provided
 public interface FontMetricsAccessor {
     /**
      * Returns a {@link FontMetrics} instance for the given {@link Font} and {@link FontRenderContext}. This is supposed
@@ -98,7 +99,7 @@ public interface FontMetricsAccessor {
      * Font metrics override handler.
      * @see #setOverride(FontMetrics, Overrider)
      */
-    @Client
+    @Provides
     interface Overrider {
         /**
          * Returning {@code NaN} means the default (not overridden) value should be used.

@@ -144,11 +144,11 @@ public class Api implements Serializable {
     }
 
     enum Usage {
-        DEFAULT(false, false), // No annotations. Non-annotated API types must either be final, or be inherited by some other type.
-        SERVICE(true, false), // @Service
-        PROXY(true, false), // @Proxy
-        CLIENT(false, true), // @Client
-        TWO_WAY(true, true); // @Proxy & @Client
+        NONE(false, false), // No annotations. Non-annotated API types must either be final, or be inherited by some other type.
+        SERVICE(true, false), // @Service & @Provided
+        PROVIDED(true, false), // @Provided
+        PROVIDES(false, true), // @Provides
+        TWO_WAY(true, true); // @Provided & @Provides
 
         public final boolean inheritableByBackend, inheritableByClient;
 

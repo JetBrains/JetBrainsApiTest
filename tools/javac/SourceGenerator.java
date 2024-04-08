@@ -1,9 +1,6 @@
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -36,7 +33,7 @@ public class SourceGenerator {
     public void generate(Round round) {
         Set<? extends Element>
                 serviceElements = round.getElementsAnnotatedWith(round.annotations.service),
-                proxyElements = round.getElementsAnnotatedWith(round.annotations.proxy);
+                providedElements = round.getElementsAnnotatedWith(round.annotations.provided);
         Map<String, Set<TypeElement>> extensions = findExtensions(round);
 
         // Generate JBR class source code.
@@ -52,13 +49,13 @@ public class SourceGenerator {
         String result = replaceTemplate(
                 replaceTemplate(jbrTemplate, "/*GENERATED_METHODS*/", serviceGetters, true),
                 "/*KNOWN_EXTENSIONS*/", knownExtensions, false)
-                .replace("/*KNOWN_PROXIES*/", joinClassNamesToList(proxyElements))
+                .replace("/*KNOWN_PROXIES*/", joinClassNamesToList(providedElements))
                 .replace("/*KNOWN_SERVICES*/", joinClassNamesToList(serviceElements));
 
         // Write generated content.
         try {
             JavaFileObject file = processingEnv.getFiler().createSourceFile("jetbrains.api/com.jetbrains.JBR",
-                    Stream.concat(serviceElements.stream(), proxyElements.stream()).toArray(Element[]::new));
+                    Stream.concat(serviceElements.stream(), providedElements.stream()).toArray(Element[]::new));
             try (Writer w = file.openWriter()) {
                 w.write(result);
             }

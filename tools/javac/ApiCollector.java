@@ -42,17 +42,34 @@ public class ApiCollector {
         this.round = round;
 
         // Validate usage of annotations
-        for (Element e : round.env.getElementsAnnotatedWithAny(
-                Stream.of(round.annotations.service, round.annotations.proxy, round.annotations.client)
-                        .filter(Objects::nonNull).toArray(TypeElement[]::new))) {
+        Set<? extends Element> serviceAnnotated = round.annotations.service == null ? Set.of() :
+                round.env.getElementsAnnotatedWith(round.annotations.service);
+        Set<? extends Element> providedAnnotated = round.annotations.provided == null ? Set.of() :
+                round.env.getElementsAnnotatedWith(round.annotations.provided);
+        Set<? extends Element> providesAnnotated = round.annotations.provides == null ? Set.of() :
+                round.env.getElementsAnnotatedWith(round.annotations.provides);
+        serviceAnnotated.forEach(e -> {
+            if (!providedAnnotated.contains(e)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "@Service also requires @Provided", e);
+            }
+            if (providesAnnotated.contains(e)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "@Service cannot be used with @Provides", e);
+            }
+        });
+        providedAnnotated.forEach(e -> {
+            if (e.getModifiers().contains(FINAL) || e.getModifiers().contains(SEALED)) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "Final/sealed type marked with @Provided", e);
+            }
+        });
+        Stream.concat(providedAnnotated.stream(), providesAnnotated.stream()).forEach(e -> {
             if (e.getKind() != ElementKind.INTERFACE && e.getKind() != ElementKind.CLASS) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                        "Non-class/interface marked with JBR API annotation", e);
-            } else if (e.getModifiers().contains(FINAL) || e.getModifiers().contains(SEALED)) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                        "Final/sealed class marked with JBR API annotation", e);
+                        "Non-class/interface marked with @Provided/@Provides", e);
             }
-        }
+        });
 
         // Collect API info from roots.
         for (Element element : round.env.getRootElements()) {
@@ -73,7 +90,7 @@ public class ApiCollector {
         nonAnnotatedUnusedApiTypes.removeAll(encounteredSupertypes);
         for (Element e : nonAnnotatedUnusedApiTypes) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                    "API types must ether be final, or annotated with @Service/@Proxy/@Client", e);
+                    "API types must ether be final, or annotated with @Service/@Provided/@Provides", e);
         }
 
         // Calculate hash from all source files on the last round.
@@ -116,7 +133,7 @@ public class ApiCollector {
             type.typeParameters = getTypeParameters(e);
             type.deprecation = getDeprecationStatus(e);
             type.usage = getUsage(e);
-            if (type.usage == Api.Usage.DEFAULT &&
+            if (type.usage == Api.Usage.NONE &&
                 !type.modifiers.contains(FINAL) &&
                 (e.getKind() == ElementKind.CLASS || e.getKind() == ElementKind.INTERFACE)) {
                 nonAnnotatedUnusedApiTypes.add(e);
@@ -213,29 +230,24 @@ public class ApiCollector {
     }
 
     private Api.Usage getUsage(TypeElement e) {
-        AnnotationMirror service = null, proxy = null, client = null;
+        AnnotationMirror service = null, provided = null, provides = null;
         for (AnnotationMirror am : e.getAnnotationMirrors()) {
             DeclaredType t = am.getAnnotationType();
             if (round.annotations.service != null && t.equals(round.annotations.service.asType())) {
                 service = am;
-            } else if (round.annotations.proxy != null && t.equals(round.annotations.proxy.asType())) {
-                proxy = am;
-            } else if (round.annotations.client != null && t.equals(round.annotations.client.asType())) {
-                client = am;
+            } else if (round.annotations.provided != null && t.equals(round.annotations.provided.asType())) {
+                provided = am;
+            } else if (round.annotations.provides != null && t.equals(round.annotations.provides.asType())) {
+                provides = am;
             }
         }
         if (service != null) {
-            if (proxy != null || client != null) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                        "Invalid combination of API annotations", e, service);
-                return null;
-            }
             return Api.Usage.SERVICE;
-        } else if (proxy != null) {
-            if (client != null) return Api.Usage.TWO_WAY;
-            else return Api.Usage.PROXY;
+        } else if (provided != null) {
+            if (provides != null) return Api.Usage.TWO_WAY;
+            else return Api.Usage.PROVIDED;
         }
-        if (client != null) return Api.Usage.CLIENT;
-        return Api.Usage.DEFAULT;
+        if (provides != null) return Api.Usage.PROVIDES;
+        return Api.Usage.NONE;
     }
 }

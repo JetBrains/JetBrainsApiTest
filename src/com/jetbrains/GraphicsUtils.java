@@ -30,6 +30,7 @@ import java.awt.geom.Rectangle2D;
  * Graphics2D utilities.
  */
 @Service
+@Provided
 public interface GraphicsUtils {
 
     /**
@@ -49,7 +50,7 @@ public interface GraphicsUtils {
      * This is similar to {@code sun.awt.ConstrainableGraphics},
      * but allows floating-point coordinates.
      */
-    @Client
+    @Provides
     public interface ConstrainableGraphics2D {
         /**
          * Destination that this Graphics renders to.

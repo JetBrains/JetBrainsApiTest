@@ -30,6 +30,7 @@ import javax.accessibility.Accessible;
  *
  */
 @Service
+@Provided
 public interface AccessibleAnnouncer {
 
     /**

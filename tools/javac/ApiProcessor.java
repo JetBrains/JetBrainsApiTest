@@ -36,9 +36,9 @@ public class ApiProcessor extends AbstractProcessor {
         Round round = new Round(roundEnvironment);
         for (TypeElement e : set) {
             switch (e.getQualifiedName().toString()) {
-                case "com.jetbrains.Service"   -> round.annotations.service   = e;
-                case "com.jetbrains.Proxy"     -> round.annotations.proxy     = e;
-                case "com.jetbrains.Client"    -> round.annotations.client    = e;
+                case "com.jetbrains.Service"   -> round.annotations.service  = e;
+                case "com.jetbrains.Provided"  -> round.annotations.provided = e;
+                case "com.jetbrains.Provides"  -> round.annotations.provides = e;
                 case "com.jetbrains.Extension" -> {
                     round.annotations.extension = e;
                     for (Element t : e.getEnclosedElements()) {

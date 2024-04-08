@@ -30,7 +30,7 @@ import java.awt.*;
 /**
  * Extended version of {@link java.awt.FileDialog}.
  */
-@Proxy
+@Provided
 public interface JBRFileDialog {
 
     /**
@@ -80,6 +80,7 @@ public interface JBRFileDialog {
 }
 
 @Service
+@Provided
 interface JBRFileDialogService {
     JBRFileDialogService INSTANCE = JBR.getService(JBRFileDialogService.class);
     JBRFileDialog getFileDialog(FileDialog dialog);

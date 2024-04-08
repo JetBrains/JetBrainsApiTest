@@ -37,7 +37,7 @@ public final class JBR {
                 a = (ServiceApi) (Object) lookup
                         .findStatic(bootstrap, "bootstrap", MethodType.methodType(Object.class, Class.class,
                                 Class.class, Class.class, Class.class, Map.class, Function.class))
-                        .invokeExact(ServiceApi.class, Service.class, Proxy.class, Client.class,
+                        .invokeExact(ServiceApi.class, Service.class, Provided.class, Provides.class,
                                 Metadata.KNOWN_EXTENSIONS, Metadata.EXTENSION_EXTRACTOR);
             } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | NoSuchMethodError ignore) {
                 // Old version of bootstrap method
@@ -116,6 +116,7 @@ public final class JBR {
      * Internal API interface, contains most basic methods for communication between client and JBR.
      */
     @Service
+    @Provided
     private interface ServiceApi {
 
         <T> T getService(Class<T> interFace);

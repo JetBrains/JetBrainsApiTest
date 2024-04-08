@@ -37,6 +37,7 @@ import java.net.URI;
  * @see java.awt.Desktop
  */
 @Service
+@Provided
 public interface DesktopActions {
 
     /**
@@ -49,7 +50,7 @@ public interface DesktopActions {
     /**
      * Desktop action handler.
      */
-    @Client
+    @Provides
     interface Handler {
 
         /**

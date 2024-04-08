@@ -29,6 +29,7 @@ import java.util.function.Supplier;
  * Jstack-related utilities.
  */
 @Service
+@Provided
 public interface Jstack {
     /**
      * Specifies a supplier of additional information to be included into

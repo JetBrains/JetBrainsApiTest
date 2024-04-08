@@ -8,12 +8,11 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks JBR API service.
- * Services are available via {@code JBR#is<NAME>Available()} and {@code JBR#get<NAME>()}.
- * Service types must not be inherited by client code.
+ * Marks classes and interfaces whose implementation is provided by JBR API.
+ * These types must not be inherited by client code unless explicitly marked with {@link Provides}.
  */
 @Target(TYPE)
 @Retention(RUNTIME)
 @Documented
-public @interface Service {
+public @interface Provided {
 }

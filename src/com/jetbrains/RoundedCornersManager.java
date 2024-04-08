@@ -32,6 +32,7 @@ import java.awt.Window;
  * Appearance depends on operating system.
  */
 @Service
+@Provided
 public interface RoundedCornersManager {
     /**
      * Setup rounded corners on window.
