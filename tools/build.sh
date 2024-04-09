@@ -25,12 +25,14 @@ fi
 if [ "x$2" = "x" ] ; then
   JAVAC="javac"
   JAR="jar"
+  JSHELL="jshell"
   JAVADOC="javadoc"
 else
   cd "$2/bin"
   JAVA_BIN="`pwd`"
   JAVAC="$JAVA_BIN/javac"
   JAR="$JAVA_BIN/jar"
+  JSHELL="$JAVA_BIN/jshell"
   JAVADOC="$JAVA_BIN/javadoc"
   cd "$RUN_DIR"
 fi
@@ -135,6 +137,21 @@ $JAR --create --file="$JAR_OUT" --manifest="tools/templates/MANIFEST.MF" $JAR_MO
 if [ "$MODE" = "dev" ] ; then
   exit 0
 fi
+
+# Verify reported API version.
+$JSHELL --help &> /dev/null || JSHELL="${JSHELL}.exe"
+$JSHELL --help &> /dev/null || {
+  echo "jshell not found"
+  exit 1
+}
+echo -e "System.out.println(com.jetbrains.JBR.getApiVersion());\n/exit" > "$OUT/version.jsh"
+REPORTED_VERSION=`$JSHELL --module-path "$JAR_OUT" --add-modules jetbrains.api --feedback silent "$OUT/version.jsh"`
+if [ "$API_VERSION" != "$REPORTED_VERSION" ] ; then
+  echo "Invalid API version, expected: $API_VERSION, reported: $REPORTED_VERSION"
+  exit 1
+fi
+
+# Create source jar.
 $JAR --create --file="$SOURCES_OUT" -C "src" . -C "$OUT/gensrc" . || {
   echo -e "\u2757 Source JAR creation failed, see log for the details." >> "$OUT/message.txt"
   exit 1
