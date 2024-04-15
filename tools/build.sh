@@ -145,7 +145,7 @@ $JSHELL --help &> /dev/null || {
   exit 1
 }
 echo -e "System.out.println(com.jetbrains.JBR.getApiVersion());\n/exit" > "$OUT/version.jsh"
-REPORTED_VERSION=`$JSHELL --module-path "$JAR_OUT" --add-modules jetbrains.api --feedback silent "$OUT/version.jsh"`
+REPORTED_VERSION=`$JSHELL --module-path "$JAR_OUT" --add-modules jetbrains.runtime.api --feedback silent "$OUT/version.jsh"`
 if [ "$API_VERSION" != "$REPORTED_VERSION" ] ; then
   echo "Invalid API version, expected: $API_VERSION, reported: $REPORTED_VERSION"
   exit 1

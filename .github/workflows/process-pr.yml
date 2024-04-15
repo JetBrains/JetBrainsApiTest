@@ -25,7 +25,7 @@ jobs:
           EXIT_CODE=$?
           cat "out/message.txt" 1> artifact/message.txt
           [ -s artifact/message.txt ] || {
-            echo -e "\u2757 Seems like there are no changes in jetbrains.api." > artifact/message.txt
+            echo -e "\u2757 Seems like there are no changes in jetbrains.runtime.api." > artifact/message.txt
             EXIT_CODE=1
           }
           exit $EXIT_CODE

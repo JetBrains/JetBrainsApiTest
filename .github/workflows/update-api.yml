@@ -52,7 +52,7 @@ jobs:
           bash tools/build.sh ${{ inputs.version != '' && inputs.version || 'full' }}
           MESSAGE="`cat out/message.txt`"
           if [ "x$MESSAGE" = "x" ] ; then
-            echo "Seems like there are no changes in jetbrains.api."
+            echo "Seems like there are no changes in jetbrains.runtime.api."
             exit 0
           fi
           API_VERSION="`cat out/version.txt`"

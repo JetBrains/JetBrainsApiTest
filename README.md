@@ -18,8 +18,9 @@ linkage errors occur.
 ## Quickstart
 
 Any feature exposed via JBR API begins with a **_service_**, which is a basic
-unit of JBR API. Each service has two related methods in `JBR` class:
+unit of JBR API. Each service has three related methods in `JBR` class:
 * `JBR.get<NAME>()` - returns service instance if it's supported, or null.
+* `JBR.get<NAME>(Extensions...)` - returns service instance with set of enabled extensions.
 * `JBR.is<NAME>Supported()` - convenience method, equivalent of `JBR.get<NAME>() != null`.
 
 ```java
@@ -39,6 +40,32 @@ if (service != null) {
 >
 > More details with a list of available services can be found in the
 > [javadoc](https://jetbrains.github.io/JetBrainsApiTest).
+
+### Extensions
+
+API methods marked with `@Extension` are *optional*, meaning that service would still be
+supported even if some of its extension methods are not.
+To use extension methods, those extensions must be explicitly enabled when retrieving the service.
+Extension methods may appear not only in services, but in regular interfaces too,
+in such cases the set of enabled extensions is implicitly propagated to objects retrieved from that service.
+
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
+> ```java
+> SomeService service;
+> Foo foo;
+> 
+> service = JBR.getSomeService();
+> foo = service.getFoo();
+> foo.bar(); // UnsupportedOperationException: Foo.bar - extension BAR is disabled
+> 
+> service = JBR.getSomeService(Extensions.BAR);
+> foo = service.getFoo();
+> foo.bar(); // OK
+> ```
 
 
 ## Versioning

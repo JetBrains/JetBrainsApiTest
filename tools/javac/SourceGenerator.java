@@ -54,7 +54,7 @@ public class SourceGenerator {
 
         // Write generated content.
         try {
-            JavaFileObject file = processingEnv.getFiler().createSourceFile("jetbrains.api/com.jetbrains.JBR",
+            JavaFileObject file = processingEnv.getFiler().createSourceFile("jetbrains.runtime.api/com.jetbrains.JBR",
                     Stream.concat(serviceElements.stream(), providedElements.stream()).toArray(Element[]::new));
             try (Writer w = file.openWriter()) {
                 w.write(result);

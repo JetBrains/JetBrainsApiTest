@@ -3,7 +3,8 @@
 1. [How does it work](#how-does-it-work)
 2. [Development setup](#development-setup)
 3. [Adding new API](#adding-new-api)
-4. [Contributing your changes](#contributing-your-changes)
+4. [Writing tests](#writing-tests)
+5. [Contributing your changes](#contributing-your-changes)
 
 
 ## How does it work
@@ -13,170 +14,40 @@ and **_target implementation_** at runtime. It does so by generating proxy
 classes implementing given interfaces and delegating all calls into actual
 implementation.
 
-In most simple cases **_client_** calls *interface* method which is
-translated into *target implementation* method in **_JBR_**, but it can
-as well go the other way, when *JBR* calls *interface* method, which
-ends up in *target implementation* code on *client* side.
-Such **_mapping_** between *interface* and *implementation*, can belong to
-one of 4 types:
-
-<details>
-  <summary>1. Proxy</summary>
-
-*Proxy* is the most straightforward type and is used when *interface* is
-called by *client*.
 ```
-╭───────────────╮           ╭───────────────╮        
-│     CLIENT    │           │      JBR      │              
-│╭─────────────╮│   Proxy   │╭─────────────╮│               
-││jetbrains.api││ ========> ││  java.base  ││                
-││ [I] Foo     ││           ││ [C] Bar     ││  
-│╰─────────────╯│           │╰─────────────╯│  
-╰───────────────╯           ╰───────────────╯    
+╭───────────────────────╮    ╭───────────────╮        
+│         CLIENT        │    │      JBR      │              
+│╭─────────────────────╮│    │╭─────────────╮│               
+││jetbrains.runtime.api││ => ││  java.base  ││                
+││ [I] Foo             ││    ││ [C] Bar     ││  
+│╰─────────────────────╯│    │╰─────────────╯│  
+╰───────────────────────╯    ╰───────────────╯
 ```
 ```java
-// jetbrains.api
-@Proxy
+// jetbrains.runtime.api
 public interface Foo {
-    void doSomething();
+    void hello();
 }
 // java.base
-public class Bar {
-    void doSomething() {
-        System.out.println("Hello Proxy!");
+class Bar {
+    void hello() {
+        System.out.println("Hello JBR API!");
     }
 }
-// generated at runtime (proxy)
-public class Baz implements Foo {
+// generated at runtime
+public class FooProxy implements Foo {
     private final Bar bar;
     @Override
-    void doSomething() {
-        bar.doSomething();
+    public void hello() {
+        bar.hello();
     }
 }
-// unnamed user module
-void hello(Foo foo) {
-    foo.doSomething(); // prints "Hello Proxy!"
-}
 ```
-</details>
-
-<details>
-  <summary>2. Service</summary>
-
-*Service* is a singleton *proxy*, exposed via `JBR`.
-```
-╭───────────────╮           ╭───────────────╮        
-│     CLIENT    │           │      JBR      │              
-│╭─────────────╮│  Service  │╭─────────────╮│               
-││jetbrains.api││ ========> ││  java.base  ││                
-││ [I] Foo     ││           ││ [C] Bar     ││  
-│╰─────────────╯│           │╰─────────────╯│  
-╰───────────────╯           ╰───────────────╯    
-```
-```java
-Foo foo = JBR.getFoo();
-if (foo != null) foo.doSomething();
-```
-</details>
-
-<details>
-  <summary>3. Client proxy</summary>
-
-*Client proxy* is the reverse version of *proxy*, when *interface* is
-called by *JBR*. This type can be used for callbacks.
-```
-╭───────────────╮           ╭───────────────╮        
-│     CLIENT    │   Client  │      JBR      │              
-│╭─────────────╮│   proxy   │╭─────────────╮│               
-││jetbrains.api││ <======== ││  java.base  ││                
-││ [I] Foo     ││           ││ [I] Bar     ││  
-│╰─────────────╯│           │╰─────────────╯│  
-╰───────────────╯           ╰───────────────╯    
-```
-```java
-// jetbrains.api
-@Client
-public interface Foo {
-    void doSomething();
-}
-// java.base
-public interface Bar {
-    void doSomething();
-}
-// generated at runtime (client proxy)
-public class Baz implements Bar {
-    private final Foo foo;
-    @Override
-    void doSomething() {
-        foo.doSomething();
-    }
-}
-// unnamed user module
-void hello(MyService service) {
-    service.setCallback(new Foo() {
-        @Override
-        void doSomething() {
-            System.out.println("Hello callback!");
-        }
-    });
-}
-```
-</details>
-
-<details>
-  <summary>4. Dynamic two-way</summary>
-
-*Dynamic two-way* mapping is a combination of *proxy* and *client proxy* types.
-Objects with such mapping can be passed back and forth between *client* and *JBR*
-with automatic dynamic conversion, so that implementation can be on either side.
-```
-╭───────────────╮           ╭───────────────╮        
-│     CLIENT    │  Dynamic  │      JBR      │              
-│╭─────────────╮│  two-way  │╭─────────────╮│               
-││jetbrains.api││ <=======> ││  java.base  ││                
-││ [I] Foo     ││           ││ [I] Bar     ││  
-│╰─────────────╯│           │╰─────────────╯│  
-╰───────────────╯           ╰───────────────╯    
-```
-```java
-// jetbrains.api
-@Client
-@Proxy
-public interface Foo {
-    void doSomething();
-}
-// java.base
-public interface Bar {
-    void doSomething();
-}
-// generated at runtime (dynamic 2-way)
-public class Foz implements Foo {
-    private final Bar bar;
-    @Override
-    void doSomething() {
-        bar.doSomething();
-    }
-}
-public class Baz implements Bar {
-    private final Foo foo;
-    @Override
-    void doSomething() {
-        foo.doSomething();
-    }
-}
-// unnamed user module
-Foo hello(Foo foo) {
-    Foo.doSomething(); // call into JBR
-    return () -> System.out.println("Hello 2-way!"); // user's implementation
-}
-```
-</details>
 
 JBR API produces a multi-release jar compatible with Java 8 and newer.
 Code in JBR API must conform to Java 8 with the following exceptions:
 
-1. There is a `module-info.java` defining `jetbrains.api` module,
+1. There is a `module-info.java` defining `jetbrains.runtime.api` module,
    it is included into Java 9+ builds.
 2. `@Deprecated` annotation allows `forRemoval`
    member despite being added in Java 9.
@@ -227,8 +98,47 @@ Code in JBR API must conform to Java 8 with the following exceptions:
 
 ## Adding new API
 
-Usually you start by adding a new *service*.
-It is an interface in `com.jetbrains` package marked with `@Service` annotation.
+Having **_interface_** and **_target_** you just need to bind them
+together using `@Provided` and `@Provides` annotations:
+- `@Provided` is for **_interface_**, meaning that its implementation is **_provided_** by JBR API.
+- `@Provides` is for **_target_**, meaning that it **_provides_** an implementation to JBR API.
+
+In JBR these annotations are nested members of `com.jetbrains.exported.JBRApi`,
+accepting name of a corresponding JBR API type it is bound to.
+
+The following table summarizes possible annotation combinations: 
+
+| JBR API                     | JBR                                       | Note                                                                                          |
+|-----------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------|
+| `@Service`<br/>`@Provided`  | `@JBRApi.Service`<br/>`@JBRApi.Provides`  | **_Service_** is a JBR API entry point. Used by client, implemented by JBR.                   |
+| `@Provided`                 | `@JBRApi.Provides`                        | Regular JBR API type. Used by client, implemented by JBR.                                     |
+| `@Provides`                 | `@JBRApi.Provided`                        | Usually used for callbacks. Used by JBR, **_target_** is on JBR API side.                     |
+| `@Provided`<br/>`@Provides` | `@JBRApi.Provided`<br/>`@JBRApi.Provides` | This is rarely used when there can be multiple implementations on both JBR and JBR API sides. |
+
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
+> </picture><br>
+>
+> JBR API doesn't care about visibility modifiers:
+> implementation can be private and in non-exported package,
+> but still be discoverable by JBR API.
+
+
+### TLDR
+
+1. If you want to add a method to an existing type, use [extension methods](#extension-methods).
+2. If your new functionality doesn't fit into any existing service, [create your own](#services).
+3. As a service doesn't have any state, it can often be implemented with [static methods](#static-implementation-methods).
+4. If you pass/return JBR API types to/from methods, consider the rules of [type conversion](#type-conversion);
+
+
+### Services
+
+JBR API **_services_** are marked with `@Service` for both **_interface_** and **_target_**.
+Services are instantiated by JBR via static factory method `create()`, or no-arg constructor.
+Factory methods and no-arg constructors can throw `JBRApi.ServiceNotAvailableException`
+to indicate that service is unavailable for some reason.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -240,56 +150,44 @@ It is an interface in `com.jetbrains` package marked with `@Service` annotation.
 > package com.jetbrains;
 > 
 > @Service
+> @Provided
 > public interface MyService {
 >     void print(String string);
 > }
 > ```
-
-Next, you need to specify the mapping between interfaces and implementation.
-This is done via adding a new entry in
-`JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java`
-for the corresponding module containing the target implementation.
-Class names are
-[binary names](https://docs.oracle.com/javase/9/docs/api/java/lang/ClassLoader.html#name).
-
-> <picture>
->   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
->   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
-> </picture><br>
->
 > ```java
 > // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
 > // ...
+> @JBRApi.Service
+> @JBRApi.Provides("MyService")
 > private static class MyServiceImpl {
+>     // Factory method is preferred over the constructor
+>     private static MyServiceImpl create() {
+>         return new MyServiceImpl();
+>     }
+>     private MyServiceImpl() {
+>         throw new JBRApi.ServiceNotAvailableException();
+>     }
 >     void print(String string) {
 >         showMessageDialog(null, string);
 >     }
 > }
 > // ...
 > ```
-> ```java
-> // JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java
-> // ...
-> JBRApi.registerModule("com.jetbrains.base.JBRApiModule") // this is for java.base
-> // ...
-> JBRApi.registerModule("com.jetbrains.desktop.JBRApiModule") // this is for java.desktop
-> // ...
->     .service("com.jetbrains.MyService", "javax.swing.JOptionPane$MyServiceImpl")
-> // ...
-> ```
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
 >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> Visibility modifiers don't matter here:
-> target implementation can be private and in non-exported package,
-> but still be discoverable by JBR API.
+> `@JBRApi.Provided` and `@JBRApi.Provides` accept fully qualified class name, but `com.jetbrains`
+> can be omitted, so both `MyService` and `com.jetbrains.MyService` are fine in the example above.
 
-Interface methods can be also mapped directly to static methods inside JBR,
-*service* can even not have its implementation class at all, with all methods
-mapped statically.
+
+### Static implementation methods
+
+Static method can be marked as an implementation for specific **_interface_** method using
+`@JBRApi.Provides("Interface#method")`.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -297,58 +195,55 @@ mapped statically.
 > </picture><br>
 >
 > ```java
+> // JetBrainsRuntime/jbr-api/src/com/jetbrains/MyService.java
+> package com.jetbrains;
+> 
+> @Service
+> @Provided
+> public interface MyService {
+>     void printForMyService(String string);
+> }
+> ```
+> ```java
 > // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
 > // ...
-> private static void printForJBRApi(String string) {
+> @JBRApi.Provides("MyService#printForMyService")
+> private static void printForMyService(String string) {
 >     showMessageDialog(null, string);
 > }
 > // ...
 > ```
-> ```java
-> // JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java
-> // ...
-> JBRApi.registerModule("com.jetbrains.desktop.JBRApiModule")
-> // ...
->     .service("com.jetbrains.MyService")
->         .withStatic("print", "printForJBRApi", "javax.swing.JOptionPane")
-> // ...
-> ```
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
 >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> `.service()` and `.withStatic()` mapping methods accept variable
-> number of target classes. The first one found is used when binding the
-> implementation. This is useful when you need to specify different implementations
-> for different platforms - just specify all of them and first found wins.
-
-Different mapping types are registered similarly: `.proxy()`, `.clientProxy()`,
-`.twoWayProxy()`, see Javadoc for more details. Each mapping type requires
-corresponding annotation to be placed on types in `jetbrains.api` module, 
-the following table summarizes usage of annotations with supported mapping types:
-
-| Annotations                | Meaning                                                                                                      | Mapping                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `@Service`                 | Annotated type is a *service*, it gets `JBR.get<NAME>()` and `JBR.is<NAME>Supported()` methods.              | `.service()`                   |
-| `@Proxy`                   | Annotated type is a *proxy*, it is implemented on *JBR* side.                                                | `.proxy()`                     |
-| `@Client`                  | Annotated type is intended to be implemented by *client*. It *may* be a *client proxy*.                      | `.clientProxy()` or none       |
-| `@Proxy` & <br/> `@Client` | Annotated type is a *proxy*, but can also be implemented by *client*. It *may* be a *dynamic two-way proxy*. | `.proxy()` or `.twoWayProxy()` |
-| none                       | Only applicable to `final` types.                                                                            | none                           |
+> `@JBRApi.Provides` also allows omitting method name when used on static method, if it matches
+> the name of static method itself, so in the example above all combinations would be fine:
+> - `MyService`
+> - `MyService#printForMyService`
+> - `com.jetbrains.MyService`
+> - `com.jetbrains.MyService#printForMyService`
 
 > <picture>
->   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/info.svg">
->   <img alt="Info" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/info.svg">
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
+>   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> All interfaces and classes in `jetbrains.api` module *must*
-> either be annotated *and* inheritable, *or* be `final`.
-> These annotations are not only needed for mapping to work,
-> but also indicate the intended usage of the annotated class/interface.
+> **_Service_** may not have its **_target_** class at all, with all methods
+> implemented statically.
 
-When objects with defined mapping are passed between *client* and *JBR*,
-they are automatically converted by wrapping/unwrapping proxy objects.
+
+### Extension methods
+
+Extension methods are used to add functionality to existing objects while still being compatible
+with older runtimes.
+Extension names are added to `Extensions` enumeration, then extension methods are marked with
+`@Extension`.
+Extensions must be explicitly enabled when retrieving the service to be able to use their
+corresponding methods.
+This is the recommended way to add functionality to existing types.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -356,38 +251,95 @@ they are automatically converted by wrapping/unwrapping proxy objects.
 > </picture><br>
 >
 > ```java
-> // jetbrains.api
-> @Service
-> public interface MyService {
->     Foo newFoo();
-> }
-> @Proxy
-> public interface Foo {
->     void doSomething();
-> }
-> // java.base
-> class Bar {
->     void doSomething() {
->         System.out.println("Hello Bar!");
->     }
->     static Bar newBar() {
->         return new Bar();
->     }
-> }
-> // JBRApiRegistry.java
-> JBRApi.registerModule("com.jetbrains.base.JBRApiModule")
->     .service("com.jetbrains.MyService")
->         .withStatic("newFoo", "newBar", "blah.blah.Bar")
->     .proxy("com.jetbrains.Foo", "blah.blah.Bar")
-> // unnamed user module
-> void hello() {
->     JBR.getMyService().newFoo().doSomething(); // prints "Hello Bar!"
+> // JetBrainsRuntime/jbr-api/src/com/jetbrains/Extensions.java
+> // ...
+> public enum Extensions {
+>     // ...
+>     SOME_FEATURE
 > }
 > ```
+> ```java
+> // JetBrainsRuntime/jbr-api/src/com/jetbrains/MyService.java
+> package com.jetbrains;
+> 
+> @Service
+> @Provided
+> public interface MyService {
+>     void foo();
+>     void bar();
+>     @Extension(Extensions.SOME_FEATURE)
+>     void newMethod();
+> }
+> ```
+> ```java
+> MyService myService = JBR.getMyService(Extensions.SOME_FEATURE);
+> if (myService != null) myService.newMethod();
+> ```
+
+
+### Type conversion
+
+JBR API automatically converts mapped types when passing objects back and forth between client and JBR.
+
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
+> ```java
+> // JetBrainsRuntime/jbr-api/src/com/jetbrains/MyService.java
+> package com.jetbrains;
+> 
+> @Service
+> @Provided
+> public interface MyService {
+>     Printer createPrinter(Formatter formatter);
+> 
+>     @Provided
+>     interface Printer {
+>         void print(String string);
+>     }
+> 
+>     @Provides
+>     interface Formatter {
+>         String format(String string);
+>     }
+> }
+> ```
+> ```java
+> // JetBrainsRuntime/src/java.desktop/share/classes/javax/swing/JOptionPane.java
+> // ...
+> @JBRApi.Service
+> @JBRApi.Provides("MyService")
+> private static class MyServiceImpl {
+>     PrinterImpl createPrinter(FormatterCallback formatter) {
+>         return new PrinterImpl(formatter);
+>     }
+> 
+>     @JBRApi.Provides("MyService.Printer")
+>     private static class PrinterImpl {
+>         private final FormatterCallback formatter;
+>         PrinterImpl(FormatterCallback formatter) {
+>             this.formatter = formatter;
+>         }
+>         void print(String string) {
+>             showMessageDialog(null, formatter.format(string));
+>         }
+>     }
+> 
+>     @JBRApi.Provided("MyService.Formatter")
+>     interface FormatterCallback {
+>         String format(String string);
+>     }
+> }
+> // ...
+> ```
+> Note how `Printer createPrinter(Formatter formatter)` on JBR API side translates into
+> `PrinterImpl createPrinter(FormatterCallback formatter)` on JBR side.
 
 When JBR API backend determines service availability, it also considers
 all mapped types, reachable from that service, that means that failure
-to find implementation for a proxy type, used (even indirectly) by a
+to find implementation for a type, used (even indirectly) by a
 service, will render that service unsupported.
 
 > <picture>
@@ -395,11 +347,11 @@ service, will render that service unsupported.
 >   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
 > </picture><br>
 >
-> If we rename `Bar#doSomething` to `Bar#doAnother` in
-> previous example, JBR API backend will fail to bind `Foo` and `Bar`
-> together due to missing implementation for `Foo#doSomething`.
-> This will cause whole `MyService` to become unavailable, resulting
-> in `JBR.getMyService()` returning `null`.
+> If we rename `PrinterImpl#print` to `PrinterImpl#print2` in
+> the example above, JBR API backend will fail to bind `Printer` and `PrinterImpl`
+> together due to missing implementation for `Printer#print`.
+> This will cause whole `MyService` to become unavailable, with
+> `JBR.getMyService()` returning `null`.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
@@ -407,7 +359,7 @@ service, will render that service unsupported.
 > </picture><br>
 >
 > You can troubleshoot mapping (and not only) issues by using
-> `-Djetbrains.api.verbose=true` system property when running your tests.
+> `-Djetbrains.runtime.api.verbose=true` system property when running your tests.
 
 When building JBR API via `make jbr-api` or `build.sh`, it will report
 a digest of API changes with compatibility status. If build script reports
@@ -415,33 +367,38 @@ a digest of API changes with compatibility status. If build script reports
 revise your API changes.
 
 
+## Writing tests
+
+Tests for JBR API functionality are kept in `jbr-api/tests`.
+It's a single set of JTreg tests, which is run against
+each JBR, supporting corresponding JBR API version.
+Each service usually has a simple check in `JBRApiTest`,
+like `Objects.requireNonNull(JBR.getMyService());`, as well as
+its own test, like `MyServiceTest`.
+JBR API tests are [block box tests](https://en.wikipedia.org/wiki/Black-box_testing),
+verifying the observed behavior via public API.
+These usually include examples of the service's intended usage.
+If you need to test the new functionality in the
+[white box manner](https://en.wikipedia.org/wiki/White-box_testing),
+consider writing tests in JBR instead.
+
+
 ## Contributing your changes
 
 When your new API is ready, you have built both JBR and JBR API, tested them
 together and made sure you didn't break compatibility or anything else,
-it's time to contribute your changes. All JBR API changes *must* go through
-GitHub Pull Requests, after bot checked your changes and at least one approval
-from a reviewer, they will be merged into `main` branch and will be assigned a
+it's time to contribute your changes.
+Commiting your changes from IDEA is convenient, as it automatically creates two
+commits into JBR API and JBR with the same commit message.
+
+All JBR API changes *must* go through GitHub Pull Requests, it's convenient to
+review both JBR API and JBR changes simultaneously, so it would be nice to provide
+links to one another.
+
+After bot checked your changes, and they got approved by at least one
+reviewer, they will be merged into `main` branch and will be assigned a
 new version.
-
-**After JBR API Pull Request is merged and assigned a version, you need to
-update supported version inside JBR to this new version -
-`SUPPORTED_VERSION` field in
-`JetBrainsRuntime/src/java.base/share/classes/com/jetbrains/registry/JBRApiRegistry.java`.**
-
-> <picture>
->   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/warning.svg">
->   <img alt="Warning" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/warning.svg">
-> </picture><br>
->
-> JBR changes *must not* be pushed into stable/development branches
-> until JBR API changes are merged and implementation version is updated in JBR.
-> However, it's advised that you do a branch review of both JBR and JBR API
-> simultaneously, providing a link to one another to give reviewer more context.
-> When JBR API is merged, just update the implementation version -
-> now you are ready to push JBR changes.
-
-When newly pushed changes are assigned a version, it also results in:
+Together with the new version, each change also gets:
 1. New tag in form `v1.2.3`.
 2. New GitHub release.
 3. Updated [javadoc](https://jetbrains.github.io/JetBrainsApiTest).
