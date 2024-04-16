@@ -9,9 +9,9 @@
 
 ## How does it work
 
-Core functionality of JBR API consists of dynamic linkage of **_interface_**
-and **_target implementation_** at runtime. It does so by generating proxy
-classes implementing given interfaces and delegating all calls into actual
+Core functionality of JBR API consists of dynamic linkage of an **_interface_**
+with its **_target_** implementation at run time. It does so by generating proxy
+classes implementing the given interfaces and delegating all calls into the actual
 implementation.
 
 ```
@@ -24,11 +24,11 @@ implementation.
 ╰───────────────────────╯    ╰───────────────╯
 ```
 ```java
-// jetbrains.runtime.api
+// module jetbrains.runtime.api
 public interface Foo {
     void hello();
 }
-// java.base
+// module java.base
 class Bar {
     void hello() {
         System.out.println("Hello JBR API!");
@@ -44,23 +44,21 @@ public class FooProxy implements Foo {
 }
 ```
 
-JBR API produces a multi-release jar compatible with Java 8 and newer.
+JBR API build produces a multi-release jar compatible with Java 8 and newer.
 Code in JBR API must conform to Java 8 with the following exceptions:
 
-1. There is a `module-info.java` defining `jetbrains.runtime.api` module,
+1. There is a `module-info.java` defining the `jetbrains.runtime.api` module,
    it is included into Java 9+ builds.
-2. `@Deprecated` annotation allows `forRemoval`
-   member despite being added in Java 9.
-
+2. `@Deprecated` annotation allows `forRemoval` member despite being added in Java 9.
 
 ## Development setup
 
-1. First off you need to have JBR [cloned](https://github.com/JetBrains/JetBrainsRuntime)
-   and [built](https://github.com/JetBrains/JetBrainsRuntime#configuring-the-build-environment).
+1. First off you need to have JetBrains Runtime (JBR) [cloned](https://github.com/JetBrains/JetBrainsRuntime)
+   into `JetBrainsRuntime` and [built](https://github.com/JetBrains/JetBrainsRuntime#configuring-the-build-environment).
    Development of JBR itself is not covered here.
 
-2. `cd JetBrainsRuntime` and `make jbr-api` - this will initialize nested repo
-   under `JetBrainsRuntime/jbr-api` and build JBR API.
+2. `cd JetBrainsRuntime` and `make jbr-api` - this will initialize a nested repo
+   under `JetBrainsRuntime/jbr-api` and build JBR API into `JetBrainsRuntime/jbr-api/out/`.
 
    > <picture>
    >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
@@ -68,31 +66,31 @@ Code in JBR API must conform to Java 8 with the following exceptions:
    > </picture><br>
    >
    > If you have previously built JBR API, `make jbr-api`
-   > may issue a warning about outdated branch, it's advised to keep
-   > your branch up-to-date with `origin/main`.
+   > may issue a warning about an outdated branch. It's advised to keep
+   > your JBR API branch up-to-date with `origin/main`.
 
-   You will see JBR API built under
+   The build result will be
    `JetBrainsRuntime/jbr-api/out/jbr-api-SNAPSHOT.jar`
    It will also be installed into your local Maven repository as
    `com.jetbrains:jbr-api:SNAPSHOT`. The easiest way to try the
-   new JBR API is to add it as Maven artifact, it will be updated
-   automatically every time you build it with `make jbr-api`.
+   new JBR API is to add it as Maven artifact to your project.
+   JBR API will then get updated automatically every time you build it with `make jbr-api`.
 
    > <picture>
    >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/tip.svg">
    >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
    > </picture><br>
    >
-   > If needed, JBR API can be built standalone,
-   > it only requires any JDK 18 or newer:
+   > JBR API can be built standalone, if needed.
+   > In this case JDK 18 or newer is required:
    > ```shell
-   > bash tools/build.sh full /path/to/jdk
+   > bash tools/build.sh full/path/to/jdk
    > ```
-   > There are other build types than `full`,
+   > There are build types other than `full`,
    > see `build.sh` for more info.
 
-3. Create a new feature branch. You may need to update remote to your
-   fork if you don't have write access to JBR API repository.
+4. Create a new feature branch. You may need to update remote to your
+   fork if you don't have write access to the JBR API repository.
    It's easy to do via IDEA: *Git -> Manage Remotes...*
 
 
@@ -104,14 +102,14 @@ together using `@Provided` and `@Provides` annotations:
 - `@Provides` is for **_target_**, meaning that it **_provides_** an implementation to JBR API.
 
 In JBR these annotations are nested members of `com.jetbrains.exported.JBRApi`,
-accepting name of a corresponding JBR API type it is bound to.
+accepting the name of the corresponding JBR API type it is bound to.
 
 The following table summarizes possible annotation combinations: 
 
 | JBR API                     | JBR                                       | Note                                                                                          |
 |-----------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------|
-| `@Service`<br/>`@Provided`  | `@JBRApi.Service`<br/>`@JBRApi.Provides`  | **_Service_** is a JBR API entry point. Used by client, implemented by JBR.                   |
-| `@Provided`                 | `@JBRApi.Provides`                        | Regular JBR API type. Used by client, implemented by JBR.                                     |
+| `@Service`<br/>`@Provided`  | `@JBRApi.Service`<br/>`@JBRApi.Provides`  | **_Service_** is a JBR API entry point. Used by a client, implemented by JBR.                 |
+| `@Provided`                 | `@JBRApi.Provides`                        | Regular JBR API type. Used by a client, implemented by JBR.                                   |
 | `@Provides`                 | `@JBRApi.Provided`                        | Usually used for callbacks. Used by JBR, **_target_** is on JBR API side.                     |
 | `@Provided`<br/>`@Provides` | `@JBRApi.Provided`<br/>`@JBRApi.Provides` | This is rarely used when there can be multiple implementations on both JBR and JBR API sides. |
 
@@ -121,7 +119,7 @@ The following table summarizes possible annotation combinations:
 > </picture><br>
 >
 > JBR API doesn't care about visibility modifiers:
-> implementation can be private and in non-exported package,
+> the implementation can be private and in a package not exported by its module,
 > but still be discoverable by JBR API.
 
 
@@ -136,9 +134,10 @@ The following table summarizes possible annotation combinations:
 ### Services
 
 JBR API **_services_** are marked with `@Service` for both **_interface_** and **_target_**.
-Services are instantiated by JBR via static factory method `create()`, or no-arg constructor.
+Services are instantiated by JBR via the static factory method `create()`, or the no-arg constructor.
 Factory methods and no-arg constructors can throw `JBRApi.ServiceNotAvailableException`
-to indicate that service is unavailable for some reason.
+to indicate that the service is unavailable for some reason. In this case the corresponding JBR API
+method `JBR.get<NAME>...` will return `null` to the client.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -161,7 +160,7 @@ to indicate that service is unavailable for some reason.
 > @JBRApi.Service
 > @JBRApi.Provides("MyService")
 > private static class MyServiceImpl {
->     // Factory method is preferred over the constructor
+>     // This factory method is preferred over the constructor
 >     private static MyServiceImpl create() {
 >         return new MyServiceImpl();
 >     }
@@ -180,13 +179,13 @@ to indicate that service is unavailable for some reason.
 >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> `@JBRApi.Provided` and `@JBRApi.Provides` accept fully qualified class name, but `com.jetbrains`
+> `@JBRApi.Provided` and `@JBRApi.Provides` accept a fully qualified class name but `com.jetbrains`
 > can be omitted, so both `MyService` and `com.jetbrains.MyService` are fine in the example above.
 
 
 ### Static implementation methods
 
-Static method can be marked as an implementation for specific **_interface_** method using
+A static method can be marked as an implementation for specific **_interface_** method using
 `@JBRApi.Provides("Interface#method")`.
 
 > <picture>
@@ -219,8 +218,8 @@ Static method can be marked as an implementation for specific **_interface_** me
 >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> `@JBRApi.Provides` also allows omitting method name when used on static method, if it matches
-> the name of static method itself, so in the example above all combinations would be fine:
+> `@JBRApi.Provides` also allows omitting the method name when used on a static method, if it matches
+> the name of the static method itself. In the example above all combinations are fine:
 > - `MyService`
 > - `MyService#printForMyService`
 > - `com.jetbrains.MyService`
@@ -238,11 +237,11 @@ Static method can be marked as an implementation for specific **_interface_** me
 ### Extension methods
 
 Extension methods are used to add functionality to existing objects while still being compatible
-with older runtimes.
-Extension names are added to `Extensions` enumeration, then extension methods are marked with
+with older runtimes that do not support said functionality.
+Extension names are added to the `Extensions` enumeration, then extension methods are marked with
 `@Extension`.
-Extensions must be explicitly enabled when retrieving the service to be able to use their
-corresponding methods.
+Extensions must be explicitly named when retrieving the service with `JBR.get<NAME>(Extensions...)`
+on the client side to be able to use their corresponding methods.
 This is the recommended way to add functionality to existing types.
 
 > <picture>
@@ -279,7 +278,7 @@ This is the recommended way to add functionality to existing types.
 
 ### Type conversion
 
-JBR API automatically converts mapped types when passing objects back and forth between client and JBR.
+JBR API automatically converts mapped types when passing objects back and forth between the client and JBR.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -334,13 +333,13 @@ JBR API automatically converts mapped types when passing objects back and forth 
 > }
 > // ...
 > ```
-> Note how `Printer createPrinter(Formatter formatter)` on JBR API side translates into
-> `PrinterImpl createPrinter(FormatterCallback formatter)` on JBR side.
+> Note how `Printer createPrinter(Formatter formatter)` on the JBR API side translates into
+> `PrinterImpl createPrinter(FormatterCallback formatter)` on the JBR side.
 
-When JBR API backend determines service availability, it also considers
-all mapped types, reachable from that service, that means that failure
-to find implementation for a type, used (even indirectly) by a
-service, will render that service unsupported.
+When the JBR API backend determines the service availability it also considers
+all mapped types reachable from that service. Therefore, a failure
+to find an implementation for a type used (even indirectly) by a
+service will render that service unsupported.
 
 > <picture>
 >   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
@@ -348,9 +347,9 @@ service, will render that service unsupported.
 > </picture><br>
 >
 > If we rename `PrinterImpl#print` to `PrinterImpl#print2` in
-> the example above, JBR API backend will fail to bind `Printer` and `PrinterImpl`
-> together due to missing implementation for `Printer#print`.
-> This will cause whole `MyService` to become unavailable, with
+> the example above, the JBR API backend will fail to bind `Printer` and `PrinterImpl`
+> together due to a missing implementation for `Printer#print`.
+> This will cause whole `MyService` to become unavailable with
 > `JBR.getMyService()` returning `null`.
 
 > <picture>
@@ -358,12 +357,12 @@ service, will render that service unsupported.
 >   <img alt="Tip" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/tip.svg">
 > </picture><br>
 >
-> You can troubleshoot mapping (and not only) issues by using
+> You can troubleshoot mapping and other issues by using the
 > `-Djetbrains.runtime.api.verbose=true` system property when running your tests.
 
 When building JBR API via `make jbr-api` or `build.sh`, it will report
-a digest of API changes with compatibility status. If build script reports
-*MAJOR* status, that means that you've broken compatibility and need to
+a digest of API changes with their compatibility status.
+The *MAJOR* status means that you've broken compatibility and need to
 revise your API changes.
 
 
@@ -371,11 +370,11 @@ revise your API changes.
 
 Tests for JBR API functionality are kept in `jbr-api/tests`.
 It's a single set of JTreg tests, which is run against
-each JBR, supporting corresponding JBR API version.
-Each service usually has a simple check in `JBRApiTest`,
-like `Objects.requireNonNull(JBR.getMyService());`, as well as
-its own test, like `MyServiceTest`.
-JBR API tests are [block box tests](https://en.wikipedia.org/wiki/Black-box_testing),
+each JBR supporting the corresponding JBR API version.
+Each service usually has a simple check in `JBRApiTest`
+like `Objects.requireNonNull(JBR.getMyService());` as well as
+its own test like `MyServiceTest`.
+JBR API tests are [block box tests](https://en.wikipedia.org/wiki/Black-box_testing)
 verifying the observed behavior via public API.
 These usually include examples of the service's intended usage.
 If you need to test the new functionality in the
@@ -388,29 +387,29 @@ consider writing tests in JBR instead.
 When your new API is ready, you have built both JBR and JBR API, tested them
 together and made sure you didn't break compatibility or anything else,
 it's time to contribute your changes.
-Commiting your changes from IDEA is convenient, as it automatically creates two
+Commiting your changes from IDEA is convenient as it automatically creates two
 commits into JBR API and JBR with the same commit message.
 
-All JBR API changes *must* go through GitHub Pull Requests, it's convenient to
+All JBR API changes *must* go through GitHub Pull Requests. It's convenient to
 review both JBR API and JBR changes simultaneously, so it would be nice to provide
 links to one another.
 
-After bot checked your changes, and they got approved by at least one
-reviewer, they will be merged into `main` branch and will be assigned a
+After the bot had checked your changes, and they got approved by at least one
+reviewer they will be merged into the `main` branch and will be assigned a
 new version.
-Together with the new version, each change also gets:
-1. New tag in form `v1.2.3`.
-2. New GitHub release.
-3. Updated [javadoc](https://jetbrains.github.io/JetBrainsApiTest).
+Together with the new version each change also gets:
+1. A new tag in the form `v1.2.3`.
+2. A new GitHub release.
+3. An updated [javadoc](https://jetbrains.github.io/JetBrainsApiTest).
 
 That's it, thanks for contributing!
 Just a few last words to make your life easier and JBR API better:
 1. JBR API is intended to be a high-level API -
-   provide only what's needed for user, don't make Lego.
+   provide only what's needed for the user, don't make Lego.
 2. Plan API ahead - once it's released, it still *sometimes*
    can be extended, but never amended.
 3. Don't break compatibility - major changes are always long planned,
    with everything possible done to mitigate the impact of incompatible
-   changes. If that's not your case - you are doing wrong.
-4. When in doubts, contact me, I will try to help - **@nikita.gubarkov**.
+   changes. If that's not your case - you are doing it wrong.
+4. When in doubt, contact me, I will try to help - **@nikita.gubarkov**.
    
