@@ -8,17 +8,11 @@ JBR API provides a standalone jar with classes and interfaces representing vario
 allowing the client code to be compiled against any JDK, while enjoying unique
 features provided by JBR at run time without worrying about compatibility and runtime errors.
 
-Calls to JBR API are automatically translated into calls to
-[JBR](https://github.com/JetBrains/JetBrainsRuntime).
-When needed functionality is unavailable (e.g. when running on another JRE,
-or an incompatible JBR version), no linkage errors occur and the call
-terminates gracefully (TODO: how exactly?).
-
 ## Quickstart
 
 Any feature exposed via JBR API begins with a **_service_**, which is a basic
 unit of JBR API. Each service has three related methods in the `JBR` class:
-* `JBR.get<NAME>()` - returns the (TODO: is it always the same instance? or `a service` is more appropariate?) service instance if it's supported or `null`.
+* `JBR.get<NAME>()` - returns the service instance if it's supported or `null`.
 * `JBR.get<NAME>(Extensions...)` - returns the service instance with the set of optional extensions enabled (see [below](#extensions)).
 * `JBR.is<NAME>Supported()` - a convenience method equivalent to `JBR.get<NAME>() != null`.
 

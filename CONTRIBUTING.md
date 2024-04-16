@@ -84,12 +84,12 @@ Code in JBR API must conform to Java 8 with the following exceptions:
    > JBR API can be built standalone, if needed.
    > In this case JDK 18 or newer is required:
    > ```shell
-   > bash tools/build.sh full/path/to/jdk
+   > bash tools/build.sh full /path/to/jdk
    > ```
    > There are build types other than `full`,
    > see `build.sh` for more info.
 
-4. Create a new feature branch. You may need to update remote to your
+3. Create a new feature branch. You may need to update remote to your
    fork if you don't have write access to the JBR API repository.
    It's easy to do via IDEA: *Git -> Manage Remotes...*
 
