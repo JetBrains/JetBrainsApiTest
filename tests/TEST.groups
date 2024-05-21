@@ -1,0 +1,5 @@
+all = \
+    :jbr_api
+
+jbr_api = \
+    /
