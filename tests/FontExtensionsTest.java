@@ -24,7 +24,7 @@
 /*
   @test
   @summary checking visualisation of drawing text with custom OpenType's features
-  @modules java.desktop/sun.font:open
+  @modules java.desktop/sun.font:+open
   @run main FontExtensionsTest
 */
 
