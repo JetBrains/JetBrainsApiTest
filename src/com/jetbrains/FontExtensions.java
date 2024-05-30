@@ -26,10 +26,7 @@
 package com.jetbrains;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Font-related utilities.
@@ -360,6 +357,13 @@ public interface FontExtensions {
      * @return new font
      */
     Font deriveFontWithFeatures(Font font, Features features);
+
+    /**
+     * This method returns set of OpenType features converted to String supported by the current font
+     *
+     * @param font       basic font
+     */
+    Set<String> getAvailableFeatures(Font font);
 
     /**
      * Get subpixel resolution for rendering text with greyscale antialiasing,
