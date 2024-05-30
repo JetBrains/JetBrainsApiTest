@@ -24,14 +24,11 @@
 /*
   @test
   @summary checking visualisation of drawing text with custom OpenType's features
-  @modules java.desktop/sun.font:+open
   @run main FontExtensionsTest
 */
 
 import com.jetbrains.FontExtensions;
 import com.jetbrains.JBR;
-
-import sun.font.FontAccess;
 
 import java.awt.*;
 import java.awt.font.TextAttribute;
@@ -80,11 +77,11 @@ public class FontExtensionsTest {
         return true;
     }
 
-    private static Font fontWithFeatures(Font font, FontExtensions.FeatureTag... features) {
-        return JBR.getFontExtensions().deriveFontWithFeatures(font, new FontExtensions.Features(features));
+    private static Font fontWithFeatures(Font font, String... features) {
+        return JBR.getFontExtensions().deriveFontWithFeatures(font, features);
     }
 
-    private static Font fontWithFeatures(FontExtensions.FeatureTag... features) {
+    private static Font fontWithFeatures(String... features) {
         return fontWithFeatures(BASE_FONT, features);
     }
 
@@ -94,36 +91,11 @@ public class FontExtensionsTest {
         return isImageEquals(image1, image2);
     }
 
-    private static String fontFeaturesAsString(Font font) {
-        return FontAccess.getFontAccess().getFeatures(font).entrySet().stream()
-                .map(feature -> (feature.getKey() + "=" + feature.getValue()))
-                .collect(Collectors.joining(";"));
-    }
-
     @JBRTest
-    private static Boolean testFeatureFromString() {
-        return  FontExtensions.FeatureTag.getFeatureTag("frac").isPresent() &&
-                FontExtensions.FeatureTag.getFeatureTag("FrAc").isPresent() &&
-                FontExtensions.FeatureTag.getFeatureTag("ss10").isPresent() &&
-                FontExtensions.FeatureTag.getFeatureTag("tttt").isEmpty();
-    }
-
-    @JBRTest
-    private static Boolean testFeaturesToString1() {
-        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, new FontExtensions.Features(Map.of(
-                FontExtensions.FeatureTag.ZERO, FontExtensions.FEATURE_ON,
-                FontExtensions.FeatureTag.SALT, 123,
-                FontExtensions.FeatureTag.FRAC, FontExtensions.FEATURE_OFF)));
-        String features = "calt=0;frac=0;kern=0;liga=0;salt=123;zero=1";
-        return fontFeaturesAsString(font).equals(features);
-    }
-
-    @JBRTest
-    private static Boolean testFeaturesToString2() {
-        Font font = BASE_FONT.deriveFont(Map.of(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON,
-                TextAttribute.KERNING, TextAttribute.KERNING_ON));
-        String features = "calt=1;kern=1;liga=1";
-        return fontFeaturesAsString(font).equals(features);
+    private static Boolean testFeaturesToString() {
+        String[] features = {"zero", "salt=123", "frac=0"};
+        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, features);
+        return Arrays.equals(JBR.getFontExtensions().getEnabledFeatures(font), features);
     }
 
     @JBRTest
@@ -133,10 +105,7 @@ public class FontExtensionsTest {
 
     @JBRTest
     private static Boolean testSettingValuesToFeatures() {
-        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, new FontExtensions.Features(Map.of(
-                FontExtensions.FeatureTag.ZERO, FontExtensions.FEATURE_ON,
-                FontExtensions.FeatureTag.SALT, 123,
-                FontExtensions.FeatureTag.FRAC, 9999)));
+        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, "zero", "salt=123", "frac=9999");
         return textDrawingEquals(fontWithFeatures(FontExtensions.FeatureTag.FRAC, FontExtensions.FeatureTag.ZERO,
                 FontExtensions.FeatureTag.SALT), font, TEST_STRING);
     }
@@ -168,9 +137,7 @@ public class FontExtensionsTest {
 
     @JBRTest
     private static Boolean testDisablingFeatures() {
-        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, new FontExtensions.Features(Map.of(
-                FontExtensions.FeatureTag.ZERO, FontExtensions.FEATURE_OFF,
-                FontExtensions.FeatureTag.FRAC, FontExtensions.FEATURE_OFF)));
+        Font font = JBR.getFontExtensions().deriveFontWithFeatures(BASE_FONT, "zero=0", "frac=0");
         return textDrawingEquals(BASE_FONT, font, TEST_STRING);
     }
 
