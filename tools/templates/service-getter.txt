@@ -1,5 +1,7 @@
-private static class $__Holder {<DEPRECATED>
-    private static final $ INSTANCE = getServiceWithFallback($.class, <FALLBACK>);
+private static class $__Holder {
+    @SuppressWarnings("auxiliaryclass")
+    private static final FallbackSupplier<$> FALLBACK = <FALLBACK>;<DEPRECATED>
+    private static final $ INSTANCE = getServiceWithFallback($.class, FALLBACK);
 }
 
 /**
@@ -24,5 +26,5 @@ public static $ get$() {
  * @return full implementation of {@link $} service if any, or {@code null} otherwise
  */<DEPRECATED>
 public static $ get$(Extensions... extensions) {
-    return getServiceWithFallback($.class, <FALLBACK>, extensions);
+    return getServiceWithFallback($.class, $__Holder.FALLBACK, extensions);
 }

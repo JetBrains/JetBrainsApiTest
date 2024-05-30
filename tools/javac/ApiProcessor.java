@@ -30,6 +30,17 @@ public class ApiProcessor extends AbstractProcessor {
         apiCollector = new ApiCollector(processingEnv);
     }
 
+    private static ExecutableElement findAnnotationValue(TypeElement e) {
+        for (Element t : e.getEnclosedElements()) {
+            if (t instanceof ExecutableElement executable) {
+                if (t.getSimpleName().toString().equals("value")) {
+                    return executable;
+                }
+            }
+        }
+        throw new Error(e.getQualifiedName() + ".value() method not found");
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         // Find our annotation elements.
@@ -39,17 +50,13 @@ public class ApiProcessor extends AbstractProcessor {
                 case "com.jetbrains.Service"   -> round.annotations.service  = e;
                 case "com.jetbrains.Provided"  -> round.annotations.provided = e;
                 case "com.jetbrains.Provides"  -> round.annotations.provides = e;
+                case "com.jetbrains.Fallback"   -> {
+                    round.annotations.fallback  = e;
+                    round.annotations.fallbackValue = findAnnotationValue(e);
+                }
                 case "com.jetbrains.Extension" -> {
                     round.annotations.extension = e;
-                    for (Element t : e.getEnclosedElements()) {
-                        if (t instanceof ExecutableElement executable) {
-                            if (t.getSimpleName().toString().equals("value")) {
-                                round.annotations.extensionValue = executable;
-                                break;
-                            }
-                        }
-                    }
-                    if (round.annotations.extensionValue == null) throw new Error("@Extension.value() method not found");
+                    round.annotations.extensionValue = findAnnotationValue(e);
                 }
             }
         }

@@ -21,19 +21,27 @@ public class Round {
         return a == null ? Set.of() : env.getElementsAnnotatedWith(a);
     }
 
-    public String getExtensionName(Element element) {
-        if (annotations.extension == null) return null;
+    private static String getAnnotationValueAsString(TypeElement annotationType, ExecutableElement annotationValue, Element element) {
+        if (annotationType == null) return null;
         for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
-            if (annotation.getAnnotationType().asElement().equals(annotations.extension)) {
-                AnnotationValue value = annotation.getElementValues().get(annotations.extensionValue);
+            if (annotation.getAnnotationType().asElement().equals(annotationType)) {
+                AnnotationValue value = annotation.getElementValues().get(annotationValue);
                 return value.getValue().toString();
             }
         }
         return null;
     }
 
+    public String getExtensionName(Element element) {
+        return getAnnotationValueAsString(annotations.extension, annotations.extensionValue, element);
+    }
+
+    public String getFallbackName(Element element) {
+        return getAnnotationValueAsString(annotations.fallback, annotations.fallbackValue, element);
+    }
+
     public static class Annotations {
-        public TypeElement service, provided, provides, extension;
-        public ExecutableElement extensionValue;
+        public TypeElement service, provided, provides, fallback, extension;
+        public ExecutableElement extensionValue, fallbackValue;
     }
 }

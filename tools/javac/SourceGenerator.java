@@ -41,7 +41,7 @@ public class SourceGenerator {
                 .filter(e -> // Only top-level public interfaces are included.
                         e.getEnclosingElement().getKind() == ElementKind.PACKAGE &&
                         e.getModifiers().contains(Modifier.PUBLIC))
-                .map(this::generateServiceGetter).toList();
+                .map(s -> generateServiceGetter(round, s)).toList();
         List<String> knownExtensions = extensions.entrySet().stream()
                 .map(e -> "KNOWN_EXTENSIONS.put(Extensions." + e.getKey() + ", new Class[] {" +
                         e.getValue().stream().map(c -> c.getQualifiedName() + ".class")
@@ -64,9 +64,8 @@ public class SourceGenerator {
         }
     }
 
-    private String generateServiceGetter(Element service) {
-        boolean hasFallback = service.getEnclosedElements().stream()
-                .anyMatch(e -> e.getSimpleName().contentEquals("__Fallback"));
+    private String generateServiceGetter(Round round, Element service) {
+        String fallback = round.getFallbackName(service);
         String javadoc = processingEnv.getElementUtils().getDocComment(service);
         if (javadoc != null) javadoc = "\n *" + javadoc.replaceAll("\n", "\n *");
         else javadoc = "";
@@ -76,7 +75,7 @@ public class SourceGenerator {
         else if (!deprecated.forRemoval()) deprecation = "\n" + deprecated;
         else deprecation = "\n@SuppressWarnings(\"removal\")\n" + deprecated;
         return serviceGetterTemplate
-            .replace("<FALLBACK>", hasFallback ? "$.__Fallback::new" : "null")
+            .replace("<FALLBACK>", fallback != null ? fallback + "::new" : "null")
             .replaceAll("\\$", service.getSimpleName().toString())
             .replace("<JAVADOC>", javadoc)
             .replaceAll("<DEPRECATED>", deprecation);

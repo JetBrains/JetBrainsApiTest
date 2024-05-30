@@ -362,6 +362,7 @@ public interface FontExtensions {
      * This method returns set of OpenType features converted to String supported by the current font
      *
      * @param font       basic font
+     * @return set of supported features
      */
     Set<String> getAvailableFeatures(Font font);
 

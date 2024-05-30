@@ -276,6 +276,39 @@ This is the recommended way to add functionality to existing types.
 > ```
 
 
+### Fallback implementation
+
+Service may have a client-side fallback implementation.
+It is used when current runtime doesn't support given service.
+`JBR.is<NAME>Supported()` will still return `true`, though.
+Fallback implementation class is specified by adding
+`@Fallback(<IMPL_CLASS>)` annotation to the service.
+Implementation class must be inherited from the service
+and have a no-arg constructor.
+99% of the time you wouldn't want your fallback class to be public.
+
+> <picture>
+>   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/light-theme/example.svg">
+>   <img alt="Example" src="https://raw.githubusercontent.com/Mqxx/GitHub-Markdown/f167aefa480e8d37e9941a25f0b40981b74a47be/blockquotes/badge/dark-theme/example.svg">
+> </picture><br>
+>
+> ```java
+> // JetBrainsRuntime/jbr-api/src/com/jetbrains/MyService.java
+> package com.jetbrains;
+> 
+> @Service
+> @Provided
+> @Fallback(MyService_Fallback.class)
+> public interface MyService {
+>     // ...
+> }
+> final class MyService_Fallback implements MyService {
+>     MyService_Fallback() {}
+>     // ...
+> }
+> ```
+
+
 ### Type conversion
 
 JBR API automatically converts mapped types when passing objects back and forth between the client and JBR.
@@ -371,9 +404,7 @@ revise your API changes.
 Tests for JBR API functionality are kept in `jbr-api/tests`.
 It's a single set of JTreg tests, which is run against
 each JBR supporting the corresponding JBR API version.
-Each service usually has a simple check in `JBRApiTest`
-like `Objects.requireNonNull(JBR.getMyService());` as well as
-its own test like `MyServiceTest`.
+Each service usually has its own test like `MyServiceTest`.
 JBR API tests are [block box tests](https://en.wikipedia.org/wiki/Black-box_testing)
 verifying the observed behavior via public API.
 These usually include examples of the service's intended usage.

@@ -36,6 +36,7 @@ import java.awt.image.BufferedImage;
  */
 @Service
 @Provided
+@Fallback(FontMetricsAccessor_Fallback.class)
 public interface FontMetricsAccessor {
     /**
      * Returns a {@link FontMetrics} instance for the given {@link Font} and {@link FontRenderContext}. This is supposed
@@ -109,41 +110,39 @@ public interface FontMetricsAccessor {
         float charWidth(int codePoint);
     }
 
-    /**
-     * Internal fallback implementation.
-     */
-    final class __Fallback implements FontMetricsAccessor {
-        private final Graphics2D g;
+}
 
-        __Fallback() {
-            g = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
-        }
+final class FontMetricsAccessor_Fallback implements FontMetricsAccessor {
+    private final Graphics2D g;
 
-        @Override
-        public FontMetrics getMetrics(Font font, FontRenderContext context) {
-            synchronized (g) {
-                g.setTransform(context.getTransform());
-                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, context.getAntiAliasingHint());
-                g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, context.getFractionalMetricsHint());
-                return g.getFontMetrics(font);
-            }
-        }
-
-        @Override
-        public float codePointWidth(FontMetrics metrics, int codePoint) {
-            String s = new String(new int[]{codePoint}, 0, 1);
-            return (float) metrics.getFont().getStringBounds(s, metrics.getFontRenderContext()).getWidth();
-        }
-
-        @Override
-        public void setOverride(FontMetrics metrics, Overrider overrider) {}
-
-        @Override
-        public boolean hasOverride(FontMetrics metrics) {
-            return false;
-        }
-
-        @Override
-        public void removeAllOverrides() {}
+    FontMetricsAccessor_Fallback() {
+        g = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
     }
+
+    @Override
+    public FontMetrics getMetrics(Font font, FontRenderContext context) {
+        synchronized (g) {
+            g.setTransform(context.getTransform());
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, context.getAntiAliasingHint());
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, context.getFractionalMetricsHint());
+            return g.getFontMetrics(font);
+        }
+    }
+
+    @Override
+    public float codePointWidth(FontMetrics metrics, int codePoint) {
+        String s = new String(new int[]{codePoint}, 0, 1);
+        return (float) metrics.getFont().getStringBounds(s, metrics.getFontRenderContext()).getWidth();
+    }
+
+    @Override
+    public void setOverride(FontMetrics metrics, Overrider overrider) {}
+
+    @Override
+    public boolean hasOverride(FontMetrics metrics) {
+        return false;
+    }
+
+    @Override
+    public void removeAllOverrides() {}
 }
