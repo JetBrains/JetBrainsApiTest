@@ -2,11 +2,5 @@ all = \
     :jbr_api
 
 jbr_api = \
-    :compatibility \
-    :version
+    /
 
-compatibility = \
-    compatibility
-
-version = \
-    version
