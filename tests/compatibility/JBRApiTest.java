@@ -34,18 +34,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class JBRApiTest {
 
-    // These services may not always be supported and have their own dedicated tests.
-    private static final Set<String> IGNORED_SERVICES = Set.of(
-            "com.jetbrains.WindowMove",
-            "com.jetbrains.RoundedCornersManager"
-    );
+    // These services may not always be supported and usually have their own dedicated tests.
+    private static final Set<String> IGNORED_SERVICES = new HashSet();
 
     public static void main(String[] args) throws Exception {
+        IGNORED_SERVICES.add("com.jetbrains.RoundedCornersManager");
+        String os = System.getProperty("os.name");
+        if ("linux".equalsIgnoreCase(os)) {
+            IGNORED_SERVICES.add("com.jetbrains.WindowDecorations");
+        } else {
+            IGNORED_SERVICES.add("com.jetbrains.WindowMove");
+        }
         if (!JBR.getApiVersion().equals("SNAPSHOT") &&
             !JBR.getApiVersion().matches("\\d+\\.\\d+\\.\\d+")) throw new Error("Invalid API version: " + JBR.getApiVersion());
         if (!JBR.isAvailable()) throw new Error("JBR API is not available");
