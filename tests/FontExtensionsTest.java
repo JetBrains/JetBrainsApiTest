@@ -24,7 +24,7 @@
 /*
   @test
   @summary checking visualisation of drawing text with custom OpenType's features
-  @run main -Djava2d.font.subpixelResolution=1x1 FontExtensionsTest
+  @run main/othervm -Djava2d.font.subpixelResolution=1x1 FontExtensionsTest
 */
 
 import com.jetbrains.FontExtensions;
