@@ -26,7 +26,7 @@
   @requires os.family == "mac" | os.family == "windows"
   @key headful
   @summary Test that window state changes on titlebar double-click
-  @run main CustomTitleBarDoubleClick
+  @run main/othervm CustomTitleBarDoubleClick
 */
 
 import com.jetbrains.JBR;
