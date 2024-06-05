@@ -26,6 +26,7 @@
  * @see com.jetbrains.JBR
  */
 module jetbrains.runtime.api {
+
     exports com.jetbrains;
 
     requires static transitive java.desktop;
